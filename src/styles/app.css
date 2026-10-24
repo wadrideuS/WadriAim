@@ -1045,18 +1045,52 @@ body[data-palette] .card:hover {
 }
 
 /* One selected palette drives every decorative accent, including exercise targets. */
+/* Energy orb, same look as the 3D targets: deep inner disc, white ring, bright rim. */
 body[data-palette] .ball,
 body[data-palette] .orb {
   background: radial-gradient(
-    circle at 35% 28%,
-    color-mix(in srgb, var(--lime), white 65%),
-    var(--lime) 38%,
-    color-mix(in srgb, var(--lime), black 55%) 90%
+    circle,
+    color-mix(in srgb, var(--lime), #0a0612 70%) 0 34%,
+    #fff 35% 39%,
+    color-mix(in srgb, var(--lime), black 8%) 41%,
+    color-mix(in srgb, var(--lime), white 60%) 88%,
+    color-mix(in srgb, var(--lime), black 80%) 98%
   );
-  box-shadow: 0 0 22px color-mix(in srgb, var(--lime), transparent 72%);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--lime), transparent 82%);
 }
-body[data-palette] .ring {
-  border-color: color-mix(in srgb, var(--lime), transparent 65%);
+body[data-palette] .ball::before,
+body[data-palette] .orb::before {
+  content: '';
+  position: absolute;
+  inset: 34%;
+  background: #fff;
+  clip-path: polygon(4% 4%, 50% 26%, 96% 4%, 74% 50%, 96% 96%, 50% 74%, 4% 96%, 26% 50%);
+}
+body[data-palette] .ball::after,
+body[data-palette] .orb::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 19deg,
+    color-mix(in srgb, var(--lime), black 45%) 0 7deg,
+    transparent 7deg 45deg
+  );
+  mask-image: radial-gradient(circle, transparent 61%, #000 62%, transparent 76%);
+  animation: orb-rays 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes orb-rays {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-palette] .ball::after,
+  body[data-palette] .orb::after {
+    animation: none;
+  }
 }
 body[data-palette] .thumb:after {
   border-color: var(--lime);
@@ -1096,10 +1130,6 @@ body[data-palette] button:focus-visible {
 }
 
 /* Muted accents and restrained bloom keep the palettes comfortable during practice. */
-body[data-palette] .ball,
-body[data-palette] .orb {
-  box-shadow: 0 0 10px color-mix(in srgb, var(--lime), transparent 88%);
-}
 body[data-palette] .primary {
   background: var(--lime);
   color: #18212a;

@@ -6,6 +6,14 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ModelRepository } from './ModelRepository.js';
 import { applyFinish } from '../data/finishes.js';
 import {
+  OrbBursts,
+  animateTargetOrbs,
+  createTargetOrb,
+  setTargetOrbColor,
+  setTargetOrbQuality,
+  targetOrbRadius,
+} from './targetOrb.js';
+import {
   animateAgent,
   allyAgentId,
   createAgentBot,
@@ -53,7 +61,7 @@ function createAbilityOrb(target) {
   group.add(core, halo);
   return group;
 }
-function createBot(mode = 1) {
+function createBot() {
   const group = new THREE.Group();
   group.userData.part = 'body';
   const add = (geometry, color, position, part = 'body', emissive = 0) => {
@@ -67,24 +75,6 @@ function createBot(mode = 1) {
     group.add(mesh);
     return mesh;
   };
-  if (mode === 0 || mode === 2 || mode === 6) {
-    add(
-      new THREE.SphereGeometry(mode === 6 ? 0.14 : mode === 0 ? 0.17 : 0.25, 24, 16),
-      0xff4c94,
-      [0, 1.65, 0],
-      'head',
-      0x6b1539,
-    );
-    const ring = add(
-      new THREE.TorusGeometry(mode === 6 ? 0.18 : mode === 0 ? 0.22 : 0.31, 0.018, 8, 32),
-      0xffb1d2,
-      [0, 1.65, 0],
-      'head',
-      0x91254c,
-    );
-    ring.rotation.x = 0.08;
-    return group;
-  }
   add(new THREE.CapsuleGeometry(0.21, 0.43, 8, 16), 0x2d2939, [0, 1.03, 0]);
   add(new THREE.SphereGeometry(0.18, 24, 16), 0xec4c91, [0, 1.65, 0], 'head', 0x581f41);
   add(new THREE.BoxGeometry(0.25, 0.055, 0.025), 0xd4f5ff, [0, 1.67, 0.177], 'head', 0x53a3c1);
@@ -176,6 +166,7 @@ export class ArenaRenderer {
     this.allyBots=new THREE.Group();this.scene.add(this.allyBots);
     this.tracers=[];
     this.effects = [];
+    this.orbBursts = new OrbBursts(this.scene);
     this.effectSeen = new WeakSet();
     this.peekGeometry = new THREE.Group();
     this.scene.add(this.peekGeometry);
@@ -261,6 +252,7 @@ export class ArenaRenderer {
     const fast = mode === 'performance';
     this.renderer.setPixelRatio(fast ? 1 : Math.min(devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = !fast;
+    setTargetOrbQuality(fast);
     this.scene.traverse((n) => {
       if (n.material) [].concat(n.material).forEach((m) => (m.needsUpdate = true));
     });
@@ -284,7 +276,8 @@ export class ArenaRenderer {
     const template = this.agentTemplates.enemy;
     let bot;
     if (target.kind === 'ability') bot = createAbilityOrb(target);
-    else if (headOnlyModes.includes(mode) || !template) bot = createBot(mode);
+    else if (headOnlyModes.includes(mode)) bot = createTargetOrb(targetOrbRadius(mode));
+    else if (!template) bot = createBot();
     else bot = createAgentBot(template, { outline: true, weapon: [11, 12].includes(mode) ? this.agentTemplates.vandal : null });
     bot.userData.kind = target.kind || 'default';
     bot.userData.ready = Boolean(template) || headOnlyModes.includes(mode) || target.kind === 'ability';
@@ -293,7 +286,7 @@ export class ArenaRenderer {
   makeAlly() {
     const template = this.agentTemplates.ally;
     if (template) return createAgentBot(template, { outline: false, weapon: this.agentTemplates.vandal });
-    const ally = createBot(11);
+    const ally = createBot();
     ally.traverse((n) => {
       if (n.isMesh) {
         n.material.color.set(0x438ba3);
@@ -519,6 +512,7 @@ export class ArenaRenderer {
       this.paletteAccent = new THREE.Color(
         style.getPropertyValue('--palette-accent').trim() || '#62b1ff',
       );
+      setTargetOrbColor(this.paletteAccent);
       const gridColors = this.arenaGrid.geometry.getAttribute('color');
       const gridColor = this.paletteAccent.clone().lerp(new THREE.Color('#8d9ba8'), 0.65);
       for (let i = 0; i < gridColors.count; i++)
@@ -562,7 +556,9 @@ export class ArenaRenderer {
         const line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:event.type==='enemy-shot'?0xffab72:0x74dbc7,transparent:true,opacity:.6}));
         this.scene.add(line);this.tracers.push({line,life:.09});
       }
-      if (event.type === 'kill') {
+      if (event.type === 'kill' && headOnlyModes.includes(session.mode)) {
+        this.orbBursts.spawn(event, targetOrbRadius(session.mode));
+      } else if (event.type === 'kill') {
         const group = new THREE.Group();
         group.position.set(event.x, event.y, event.z);
         for (let i = 0; i < 9; i++) {
@@ -582,6 +578,8 @@ export class ArenaRenderer {
         this.effects.push({ group, life: 0.45 });
       }
     }
+    this.orbBursts.update(dt);
+    animateTargetOrbs(performance.now() / 1000, session.targets.some((t) => t.tracked));
     this.tracers=this.tracers.filter(item=>{item.life-=dt;if(item.life>0)return true;this.scene.remove(item.line);item.line.geometry.dispose();item.line.material.dispose();return false;});
     for (const effect of this.effects) {
       effect.life -= dt;
