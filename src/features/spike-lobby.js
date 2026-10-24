@@ -10,7 +10,8 @@ export function installSpikeLobby(parent,{onChange,onCreate,onJoin,onLeave}){
  const row=document.createElement('div');row.className='spike-room-join';row.append(input,join);
  const status=document.createElement('p');status.setAttribute('role','status');
  const leave=document.createElement('button');leave.textContent='Salir de la sala';leave.type='button';leave.hidden=true;
- friends.append(create,row,status,leave);root.append(label,partnerLabel,friends);parent.append(root);
+ const heading=document.createElement('h3');heading.className='entry-section-title';heading.textContent='Partida';
+ friends.append(create,row,status,leave);root.append(heading,label,partnerLabel,friends);parent.append(root);
  const update=()=>{friends.hidden=partner.value!=='friend';onChange?.({difficulty:difficulty.value,partner:partner.value});};
  difficulty.onchange=update;partner.onchange=update;
  const run=async fn=>{create.disabled=join.disabled=true;try{await fn();}catch(e){status.textContent=e.message;}finally{create.disabled=join.disabled=false;}};

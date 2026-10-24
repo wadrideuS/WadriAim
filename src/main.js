@@ -1,6 +1,7 @@
 import './styles/app.css';
 import './styles/game.css';
 import './styles/account.css';
+import './styles/arena-entry.css';
 import { AmbientMusic } from './audio/AmbientMusic.js';
 import { mountDashboard } from './app/dashboard.js';
 import { bootAccess, installAccountPanel } from './account/access.js';

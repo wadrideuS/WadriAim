@@ -368,83 +368,6 @@
   }
 }
 
-.mode-brief {
-  width: min(720px, 90%);
-  margin: 18px auto 22px;
-  text-align: left;
-}
-.mode-brief[hidden] {
-  display: none;
-}
-.brief-label {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--lime);
-  margin-bottom: 10px;
-}
-.brief-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.brief-grid > div {
-  background: #ffffff05;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  padding: 15px;
-}
-.brief-grid strong {
-  font-size: 12px;
-  color: var(--text);
-}
-.brief-grid p {
-  margin: 7px 0 0;
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.7;
-}
-#overlay:has(.mode-brief:not([hidden])) h2 {
-  font-size: 28px;
-}
-#overlay:has(.mode-brief:not([hidden])) .controls {
-  margin-top: 18px;
-}
-@media (max-width: 600px) {
-  .brief-grid {
-    grid-template-columns: 1fr;
-    gap: 5px;
-  }
-  .brief-grid > div {
-    padding: 9px 13px;
-  }
-  .mode-brief {
-    margin: 12px auto;
-  }
-  .brief-grid p {
-    margin: 3px 0 0;
-  }
-  #overlay {
-    overflow: auto;
-    max-height: 100%;
-  }
-}
-@media (max-height: 750px) {
-  .mode-brief {
-    margin: 10px auto;
-  }
-  .brief-grid > div {
-    padding: 10px;
-  }
-  #overlay:has(.mode-brief:not([hidden])) .eyebrow {
-    display: none;
-  }
-  #overlay:has(.mode-brief:not([hidden])) h2 {
-    margin: 8px 0;
-  }
-  #overlay:has(.mode-brief:not([hidden])) #instructions {
-    display: none;
-  }
-}
 body::before {
   content: '';
   position: fixed;
@@ -1004,35 +927,6 @@ header .admin-trigger {
 .profile-page .friend-comparison:empty {display:none;}
 .profile-page .riot-connection-note {grid-column:1/-1;margin:0;}
 @media(max-width:800px) { .profile-page {width:calc(100% - 28px);margin-top:24px;} .profile-page #account-content {display:flex;flex-direction:column;gap:18px;} .profile-page #account-content > * {width:100%;} .profile-summary > div {padding:15px 10px;} .profile-summary strong {font-size:27px;} .profile-page .profile-stats {padding:15px;} .profile-page .account-heading h2 {font-size:29px;} }
-.community-record {width:min(720px,90%);margin:16px auto 0;padding:12px 16px;border:1px solid color-mix(in srgb,var(--lime) 30%,var(--line));border-radius:10px;background:color-mix(in srgb,var(--lime) 5%,var(--panel));color:var(--lime);font-size:11px;line-height:1.6;}
-.community-record[hidden] {display:none;}
-
-/* Shared, compact entry and pause panel over the actual arena. */
-#game #overlay {align-items:flex-start;justify-content:center;padding:clamp(18px,3.4vw,64px);background:#07090c55;backdrop-filter:blur(3px);text-align:left;}
-#game #overlay[hidden]{display:none;}
-.arena-entry-panel {width:min(510px,100%);max-height:calc(100% - 12px);overflow:auto;scrollbar-width:thin;background:#101318f5;border:1px solid #343a45;border-radius:13px;box-shadow:0 14px 55px #0005;padding:24px;}
-#overlay .arena-entry-panel .eyebrow {display:block;color:#979eaa;font-size:10px;letter-spacing:1px;margin:0 0 12px;}
-#overlay .arena-entry-panel h2 {font-size:28px;margin:0 0 12px;letter-spacing:-1px;line-height:1.2;}
-#overlay .arena-entry-panel p {color:#a8afbb;font-size:12px;line-height:1.6;margin:10px 0;}
-#overlay .arena-entry-panel .mode-brief {width:100%;margin:20px 0 16px;}
-.arena-entry-panel .simple-controls {display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:10px 0 16px;}
-.simple-controls>div {display:flex;align-items:center;gap:12px;color:#a8afbb;font-size:11px;}
-.simple-controls>div>span:first-child {min-width:85px;display:flex;gap:3px;}
-.simple-controls kbd {padding:3px 5px;background:#1b2027;border:1px solid #3b424c;border-radius:4px;font:10px monospace;color:#d8dce2;}
-#overlay .arena-entry-panel .brief-score {font-size:11px;color:#858d9b;}
-#game .arena-entry-panel #weapons {display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0;}
-#game .arena-entry-panel .weapon-choice {min-height:48px;padding:9px 4px;background:#191d24;}
-#game .arena-entry-panel .weapon-choice strong{font-size:12px;}
-#game .arena-entry-panel .weapon-choice small{font-size:8px;}
-#game .arena-entry-panel #weaponlabel{font-size:9px;color:#939ba9;letter-spacing:1px;}
-#game .arena-entry-panel #weaponinfo{font-size:10px;margin:8px 0;}
-#game .arena-entry-panel .community-record {padding:10px 0;margin:10px 0;font-size:10px;background:none;border:0;border-top:1px solid #ffffff13;border-radius:0;color:#969eaa;}
-#game .arena-entry-panel .entry-buttons {display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid #ffffff18;margin:18px -24px -24px;padding:16px 24px;}
-#game .arena-entry-panel .entry-buttons button {min-height:34px;padding:9px 12px;font-size:11px;}
-#game .arena-entry-panel .entry-buttons .exit-arena {display:inline-block;margin:0 auto 0 0;padding:8px 0;color:#d2d6dd;text-decoration:none;}
-#game .arena-entry-panel .fullscreen-entry {min-width:0;color:#aab1bd;border:1px solid #3b414c;background:transparent;order:1;}
-#game .arena-entry-panel .controls {display:none;}
-#game .arena-entry-panel #entrynotice:empty {display:none;}
 #game:has(#overlay[hidden]) .gamehead {display:none;}
 #game:has(#overlay:not([hidden])) #game-hud,#game:has(#overlay:not([hidden])) .movement-keystrokes{visibility:hidden;}
 #game #game-hud>.hud-impacts,#game #game-hud>.hud-right {display:block !important;position:absolute;top:46%;padding:10px 18px;background:none;border:0;text-shadow:0 2px 8px #0008;}
@@ -1043,7 +937,6 @@ header .admin-trigger {
 #game #game-hud .hud-impacts span {font-size:10px;color:#acb3be;}
 #game #game-hud .round-clock {display:none !important;}
 #game .hud-bottom #hud-ammo {background:#0b0e1488;border:0;box-shadow:none;padding:7px 10px;font-size:15px !important;}
-@media(max-width:650px){#game #overlay{padding:14px;}.arena-entry-panel{padding:18px;}#overlay .arena-entry-panel h2{font-size:24px;}.arena-entry-panel .simple-controls{gap:9px;}.simple-controls>div{gap:5px;font-size:10px;}.simple-controls>div>span:first-child{min-width:68px;}.simple-controls kbd{font-size:8px;padding:3px;}#game .arena-entry-panel .entry-buttons{margin:16px -18px -18px;padding:14px 18px;}#game #game-hud strong{font-size:30px;}#game #game-hud>.hud-impacts{left:1%;}#game #game-hud>.hud-right{right:1%;}}
 
 body.show-session-summary>main,body.show-session-summary>footer,body.show-session-summary>header {display:none;}
 .session-summary {position:relative;z-index:1;max-width:1500px;min-height:100vh;margin:auto;padding:32px clamp(20px,4vw,70px);color:#e3e6ec;}
@@ -1065,6 +958,7 @@ body.show-session-summary>main,body.show-session-summary>footer,body.show-sessio
 .summary-back {color:#c8cdd6;border:0;background:none;}
 @media(max-width:850px){.summary-layout{grid-template-columns:1fr;}.summary-layout article{min-height:0;}.summary-hero>strong{font-size:64px;}.summary-metrics{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:450px){.summary-metrics{grid-template-columns:repeat(2,1fr);}.session-summary h1{letter-spacing:-1px;}}
+@media(max-width:650px){#game #game-hud strong{font-size:30px;}#game #game-hud>.hud-impacts{left:1%;}#game #game-hud>.hud-right{right:1%;}}
 
 #game .gamehead {display:none;}
 .palette-select {display:none !important;}
@@ -1083,14 +977,6 @@ body.show-session-summary>main,body.show-session-summary>footer,body.show-sessio
 @media(max-width:600px){#game #game-hud>.hud-impacts{left:12px;top:14px;min-width:100px;padding:10px;}#game #game-hud>.hud-right{right:12px;top:14px;min-width:80px;padding:10px;}#game #game-hud .hud-impacts strong{font-size:26px;}}
 
 #arena.damage-flash:after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 100px #e8465260;pointer-events:none;z-index:3;}
-
-.spike-lobby {display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
-.spike-lobby[hidden],.spike-friend-room[hidden]{display:none;}
-.spike-lobby label{font-size:10px;color:#a5adbb;display:grid;gap:7px;}
-.spike-lobby select,.spike-lobby input{background:#191e27;color:#d6dce5;border:1px solid #38404d;border-radius:6px;padding:9px;width:100%;font-size:11px;}
-.spike-friend-room {grid-column:1/-1;}
-.spike-friend-room button{font-size:11px;padding:9px 12px;background:#202735;color:#d6dce5;border:1px solid #404b5c;border-radius:6px;}
-.spike-room-join{display:flex;gap:8px;margin-top:10px;}
 
 .defense-result-banner {position:absolute;z-index:10;left:0;right:0;top:29%;padding:30px 20px;text-align:center;font-size:clamp(35px,6vw,80px);font-weight:800;letter-spacing:8px;color:#ff777f;background:linear-gradient(90deg,transparent,#271014e8,transparent);border-top:1px solid #fd74764d;border-bottom:1px solid #fd74764d;pointer-events:none;}
 .defense-result-banner[hidden]{display:none;}

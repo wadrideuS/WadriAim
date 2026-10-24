@@ -18,6 +18,8 @@ import { WeaponAudio } from '../audio/WeaponAudio.js';
 import { skinNames } from '../data/finishes.js';
 import { installArenaSettings } from '../features/arena-settings.js';
 import { decorateVolumeField } from '../features/volume-field.js';
+import { buildEntryPanel } from '../features/entry-panel.js';
+import { weaponCard, paintWeaponInfo } from '../features/weapon-card.js';
 const $ = (id) => document.getElementById(id);
 
 /** Connects DOM, input, simulation and GPU renderer; owns their lifecycle. */
@@ -29,18 +31,14 @@ export class TrainingController {
     this.modeBrief.className = 'mode-brief';
     this.modeBrief.setAttribute('aria-label', 'Cómo jugar este modo');
     $('instructions').after(this.modeBrief);
-    this.communityRecord = document.createElement('div');
+    this.communityRecord = document.createElement('p');
     this.communityRecord.className = 'community-record';
-    this.modeBrief.after(this.communityRecord);
-    this.entryPanel=document.createElement('div');this.entryPanel.className='arena-entry-panel';
-    this.entryPanel.append(...$('overlay').childNodes);$('overlay').append(this.entryPanel);
+    this.entryPanel = buildEntryPanel($('overlay'), { record: this.communityRecord });
     this.spikeLobby=installSpikeLobby(this.entryPanel,{
       onChange:options=>{if(![11,12].includes(this.session?.mode) || this.session.status!=='ready')return;if(options.partner!=='friend')this.leaveSpikeRoom();options={...options,spawn:read('wa-spawns',{})[this.session.mode]||null};this.session.spikeOptions=options;resetSpike(this.session,options);this.draw();},
       onCreate:()=>this.openSpikeRoom(),onJoin:code=>this.openSpikeRoom(code),onLeave:()=>this.leaveSpikeRoom(),
     });
-    this.modeBrief.before(this.spikeLobby.root);
-    const actions=this.entryPanel.querySelector('.entry-buttons');
-    actions.prepend($('exit-arena'));$('exit-arena').textContent='← Volver al menú';
+    this.modeBrief.after(this.spikeLobby.root);
     this.spikeAudio=new SpikeAudio();
     this.audio = new WeaponAudio();
     // flash drill: white-out layer and ability callout
@@ -169,7 +167,7 @@ export class TrainingController {
     this.endRound.onclick = () => {
       if (this.session.status === 'paused') this.publishSummary(true);
     };
-    this.entryPanel.querySelector('.entry-buttons').append(this.endRound);
+    $('startfull').before(this.endRound);
     // Haven / Supervivencia: choose where you start next round
     this.spawnRow = document.createElement('div');
     this.spawnRow.className = 'setting-row spawn-row';
@@ -287,7 +285,6 @@ export class TrainingController {
     this.spikeLobby.reset();this.spikeLobby.show([11,12].includes(mode),mode===12);
     this.resultBanner.hidden=true;clearTimeout(this.finishTimer);this.spikeAudio.stop();
     $('start').textContent = 'Iniciar';
-    $('overlay').classList.remove('inspecting');
     cancelAnimationFrame(this.frame);
     const weapon = [7,8,9].includes(mode) ? 'karambit' : arsenal[this.weaponChoices[mode]] && this.weaponChoices[mode] !== 'karambit' ? this.weaponChoices[mode] : 'vandal';
     this.session.reset(mode, weapon);
@@ -301,7 +298,7 @@ export class TrainingController {
       this.communityRecord.textContent = rows.length ? `RÉCORD DE OTROS JUGADORES · @${rows[0].username} · ${rows[0].score} ${mode === 6 || mode >= 7 ? 'puntos' : 'aciertos'}` : 'Aún no hay marcas de otros jugadores en este modo. ¡Sé el primero!';
     }).catch(() => { if(this.session.mode === mode) this.communityRecord.textContent = 'El récord de la comunidad no está disponible en este momento.'; });
     $('result').textContent = exercises[mode][0];
-    this.entryPanel.querySelector('.eyebrow').textContent='WADRIAIM · '+exercises[mode][1].toUpperCase();
+    this.entryPanel.querySelector('.eyebrow').textContent=exercises[mode][1];
     $('instructions').textContent =
       mode === 2
         ? 'Mantén pulsado el disparo mientras sigues al bot.'
@@ -315,6 +312,7 @@ export class TrainingController {
         '45 segundos · objetivos de 650 ms · munición ilimitada. Más velocidad y racha, más puntos.';
     this.notice('');
     $('overlay').hidden = false;
+    this.entryPanel.querySelector('.entry-body').scrollTo(0, 0);
     $('loadout').hidden = false;
     this.endRound.hidden = true;
     this.arenaSettings.refresh('ready');
@@ -356,28 +354,23 @@ export class TrainingController {
   }
   loadout() {
     const root = $('weapons');
-    root.innerHTML = '';
+    root.replaceChildren();
     Object.entries(arsenal).filter(([id]) => this.session.course ? id === 'karambit' : id !== 'karambit').forEach(([id, weapon]) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'weapon-choice' + (id === this.session.weaponId ? ' selected' : '');
-      button.setAttribute('aria-pressed', String(id === this.session.weaponId));
-      const title = document.createElement('strong');
-      title.textContent = weapon.name;
-      const detail = document.createElement('small');
-      detail.textContent = `${weapon.mag} balas · ${weapon.auto ? 'AUTO' : 'SEMI'}`;
-      button.append(title, detail);
+      const button = weaponCard(id, weapon, id === this.session.weaponId);
       button.onclick = async () => {
         this.session.chooseWeapon(id);
         this.weaponChoices[this.session.mode] = id;
         save('wa-weapons', this.weaponChoices);
         this.loadout();
+        root.querySelector('.selected')?.focus();
         await this.loadModels(id);
       };
       root.append(button);
     });
-    $('weaponinfo').textContent =
-      this.session.course ? 'Karambit Sport · solo cuchillo · circuitos progresivos' : skinNames[this.session.weaponId] + ' / ' + this.session.weapon.type + ' / R para recargar';
+    const weapon = this.session.weapon;
+    paintWeaponInfo($('weaponinfo'), this.session.course
+      ? { name: weapon.name, details: ['Solo cuchillo', 'Circuitos progresivos'] }
+      : { name: weapon.name, details: [skinNames[this.session.weaponId], weapon.type] });
 
     $('loadout').hidden = false;
     this.arenaSettings.refresh(this.session.status);

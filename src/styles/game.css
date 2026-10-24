@@ -76,15 +76,6 @@ button:disabled {
   opacity: 0.5;
   cursor: wait;
 }
-.weapon-choice {
-  min-height: 78px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.weapon-choice strong {
-  font-size: 15px;
-}
 .gamefoot {
   font-size: 8px;
 }
@@ -105,36 +96,6 @@ button:disabled {
   #game-hud strong {
     font-size: 27px;
   }
-}
-.exit-arena {
-  color: #ff9dc6;
-  font-size: 11px;
-  text-decoration: underline;
-  margin-top: 12px;
-}
-#overlay.inspecting {
-  inset: auto 16px 16px auto;
-  background: #180f22e8;
-  backdrop-filter: none;
-  width: min(410px, 90%);
-  border: 1px solid #71405b;
-  border-radius: 8px;
-  padding: 16px;
-  max-height: 160px;
-}
-#overlay.inspecting > .eyebrow,
-#overlay.inspecting > h2,
-#overlay.inspecting > #instructions,
-#overlay.inspecting > #loadout,
-#overlay.inspecting > .controls {
-  display: none;
-}
-#overlay.inspecting .entry-buttons {
-  gap: 8px;
-}
-#overlay.inspecting .entry-buttons button {
-  padding: 10px;
-  font-size: 10px;
 }
 #hit-feedback {
   position: absolute;
@@ -176,25 +137,6 @@ button:disabled {
   accent-color: #ff4b92;
 }
 
-.entry-buttons {
-  gap: 10px;
-  align-items: center;
-}
-.entry-buttons .primary,
-.entry-buttons .fullscreen-entry {
-  min-height: 40px;
-  padding: 11px 17px;
-  font-size: 11px;
-  line-height: 1.25;
-}
-.entry-buttons .fullscreen-entry {
-  letter-spacing: 0.45px;
-}
-#overlay.inspecting .entry-buttons button {
-  min-height: 34px;
-  padding: 9px 12px;
-  font-size: 10px;
-}
 
 /* The arena fills the viewport; controls float over it without header/footer bands. */
 #game {
@@ -232,22 +174,6 @@ html:fullscreen #game #arena {
   margin-left: auto;
   background: #303c4ddd;
   color: #fff;
-}
-#game #overlay {
-  background: color-mix(in srgb, var(--palette-bg) 90%, transparent);
-}
-#game .weapon-choice {
-  background: #ffffff0b;
-  border-color: #ffffff35;
-}
-#game .weapon-choice[aria-checked='true'] {
-  border-color: var(--lime);
-}
-#game .exit-arena {
-  display: block;
-  margin: 14px auto 0;
-  text-align: center;
-  color: var(--lime);
 }
 
 body[data-palette] #asset-status,
@@ -330,43 +256,6 @@ body[data-palette] .gamehead button:hover {
     top: 75px;
   }
 }
-
-/* Enemy highlight colour picker (rojo / amarillo / morado). */
-.outline-picker {margin-top:12px;}
-.outline-picker label {display:block;font-size:9px;letter-spacing:1px;color:#939ba9;margin-bottom:6px;}
-.outline-picker > div {display:flex;gap:6px;flex-wrap:wrap;}
-.outline-picker button {--swatch:#ff3346;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;border:1px solid #3b414c;background:transparent;color:#c9ced6;font-size:10px;letter-spacing:.5px;cursor:pointer;}
-.outline-picker button::before {content:'';width:10px;height:10px;border-radius:50%;background:var(--swatch);box-shadow:0 0 6px var(--swatch);}
-.outline-picker button[data-outline='amarillo'] {--swatch:#f4f142;}
-.outline-picker button[data-outline='morado'] {--swatch:#c13dff;}
-.outline-picker button.selected {border-color:var(--swatch);color:#fff;background:color-mix(in srgb,var(--swatch) 14%,transparent);}
-
-/* Arena settings (before the round and in the pause menu). */
-.arena-settings {margin-top:14px;display:grid;gap:12px;}
-.arena-settings .settings-block {border-top:1px solid #ffffff14;padding-top:10px;display:grid;gap:8px;}
-.arena-settings .settings-block[hidden] {display:none;}
-.arena-settings h3 {margin:0;font-size:9px;letter-spacing:1.5px;color:#939ba9;text-transform:uppercase;font-weight:600;}
-.setting-row {display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.setting-label {min-width:118px;font-size:11px;color:#c9ced6;}
-.setting-hint {font-size:10px;color:#8b93a1;}
-.setting-row input[type=number] {width:90px;padding:6px 8px;border-radius:6px;border:1px solid #3b414c;background:#0c0f14;color:#fff;font:inherit;font-size:12px;}
-.segmented {display:inline-flex;border:1px solid #3b414c;border-radius:7px;overflow:hidden;}
-.segmented button {padding:6px 11px;border:0;background:transparent;color:#c9ced6;font-size:10px;letter-spacing:.4px;cursor:pointer;}
-.segmented button + button {border-left:1px solid #3b414c;}
-.segmented button.selected {background:color-mix(in srgb,var(--palette-accent,#ff408e) 22%,transparent);color:#fff;}
-.outline-row .segmented button::before {content:'';display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:#ff3346;box-shadow:0 0 6px currentColor;}
-.outline-row .segmented button[data-value='amarillo']::before {background:#f4f142;}
-.outline-row .segmented button[data-value='morado']::before {background:#c13dff;}
-.mira-strip {display:flex;gap:6px;flex-wrap:wrap;}
-.mira-chip {padding:2px;border-radius:6px;border:1px solid #3b414c;background:#0b0e14;cursor:pointer;line-height:0;}
-.mira-chip canvas {width:56px;height:36px;}
-.mira-chip.selected {border-color:var(--palette-accent,#ff408e);box-shadow:0 0 0 1px var(--palette-accent,#ff408e);}
-.ui-swatches {display:flex;gap:8px;}
-.ui-swatch {width:24px;height:24px;border-radius:50%;border:2px solid #0b0e14;background:var(--swatch);cursor:pointer;box-shadow:0 0 0 1px #3b414c;}
-.ui-swatch.selected {box-shadow:0 0 0 2px #fff;}
-.end-round {min-height:34px;padding:9px 12px;font-size:11px;border-radius:8px;border:1px solid #3b414c;background:transparent;color:#d2d6dd;cursor:pointer;}
-.end-round[hidden] {display:none;}
-.arena-entry-panel {max-height:calc(100% - 24px);overflow-y:auto;}
 
 /* Flash drill */
 .blind-layer {position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4;transition:opacity .05s linear;}

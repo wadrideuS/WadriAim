@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>WadriAim · miniaturas de armas</title>
+    <style>
+      body {
+        margin: 24px;
+        background: #14171d;
+        color: #d7dbe2;
+        font: 13px system-ui, sans-serif;
+      }
+      #thumbs {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+      figure {
+        margin: 0;
+        padding: 12px;
+        border: 1px solid #2f3540;
+        border-radius: 10px;
+        background: repeating-conic-gradient(#1b1f27 0 25%, #20252e 0 50%) 0 0 / 16px 16px;
+      }
+      img {
+        width: 100%;
+        display: block;
+      }
+      output {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="status" role="status">Renderizando…</p>
+    <div id="thumbs"></div>
+    <script type="module" src="./render.js"></script>
+  </body>
+</html>

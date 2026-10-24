@@ -1,19 +1,10 @@
 import { read, save } from '../lib/storage.js';
 import { cross } from './crosshair-code.js';
+import { crosshairChoices, readCollection } from './crosshair-collection.js';
 import { palettes, applyPalette } from './palettes.js';
+import { icon as musicIcon, SKIP_LABEL, SKIP_UNAVAILABLE } from '../audio/MusicControl.js';
 
-/** Small crosshair presets (same code format as the gallery). */
-function presetCode(color, len, gap, thickness = 1, dot = false, outline = false) {
-  return `0;s;1;P;c;${color};h;${outline ? 1 : 0};d;${dot ? 1 : 0};z;2;0b;${len ? 1 : 0};0t;${thickness};0l;${len};0v;${len};0o;${gap};0a;1;0f;0;0m;0;1b;0;S;s;1`;
-}
-const quickMiras = [
-  { name: 'Cian compacta', code: presetCode(5, 4, 2) },
-  { name: 'Punto blanco', code: presetCode(0, 0, 0, 1, true, true) },
-  { name: 'Verde precisa', code: presetCode(1, 3, 1) },
-  { name: 'Blanca clásica', code: presetCode(0, 5, 3, 1, false, true) },
-  { name: 'Amarilla visible', code: presetCode(4, 5, 2, 2, false, true) },
-  { name: 'Cruz con punto', code: presetCode(1, 4, 3, 1, true) },
-];
+const AMBIENT_GENRE = 'synth';
 
 export const outlineChoices = { rojo: 'Rojo', amarillo: 'Amarillo', morado: 'Morado' };
 
@@ -24,12 +15,34 @@ const el = (tag, cls, text) => {
   return node;
 };
 
-function segmented(label, choices, current, onPick) {
+let labelCount = 0;
+/**
+ * Label column + control column. A real <label for> when the control is a
+ * single field; otherwise the label names the control group via aria-labelledby.
+ */
+function settingRow(text, controls, { labelFor } = {}) {
   const row = el('div', 'setting-row');
-  const title = el('span', 'setting-label', label);
+  const label = el(labelFor ? 'label' : 'span', 'setting-label', text);
+  if (labelFor) label.htmlFor = labelFor;
+  else {
+    label.id = `arena-setting-${++labelCount}`;
+    controls[0].setAttribute('aria-labelledby', label.id);
+  }
+  const control = el('div', 'setting-control');
+  control.append(...controls);
+  row.append(label, control);
+  return row;
+}
+
+function settingsGroup(title, rows) {
+  const group = el('div', 'settings-group');
+  group.append(el('h4', '', title), ...rows);
+  return group;
+}
+
+function segmented(label, choices, current, onPick) {
   const group = el('div', 'segmented');
   group.setAttribute('role', 'group');
-  group.setAttribute('aria-label', label);
   const paint = (value) =>
     group.querySelectorAll('button').forEach((b) => {
       const on = b.dataset.value === value;
@@ -47,8 +60,129 @@ function segmented(label, choices, current, onPick) {
     group.append(b);
   }
   paint(current);
-  row.append(title, group);
-  return { row, paint };
+  return { row: settingRow(label, [group]), paint };
+}
+
+function sensitivityRow(api) {
+  const sens = el('input');
+  Object.assign(sens, { type: 'number', min: '0.01', max: '10', step: '0.001', id: 'arena-sens' });
+  const hint = el('small', 'setting-hint');
+  const paint = () => {
+    const profile = api.profile();
+    const dpi = profile.dpi || 800;
+    sens.value = profile.sens;
+    hint.textContent = `eDPI ${Math.round(profile.sens * dpi)} · ${((360 / (0.07 * profile.sens * dpi)) * 2.54).toFixed(1)} cm/360°`;
+  };
+  sens.onchange = () => {
+    const value = Number(sens.value);
+    if (value >= 0.01 && value <= 10) api.updateProfile({ sens: value });
+    paint();
+  };
+  return { row: settingRow('Sensibilidad', [sens, hint], { labelFor: 'arena-sens' }), paint };
+}
+
+function miraRow(api) {
+  const strip = el('div', 'mira-strip');
+  strip.setAttribute('role', 'group');
+  const revealSelected = (scrollLeft) => {
+    strip.scrollLeft = scrollLeft;
+    const selected = strip.querySelector('.selected');
+    if (!selected) return;
+    const start = selected.offsetLeft - strip.scrollLeft;
+    const isVisible = start >= 0 && start + selected.offsetWidth <= strip.clientWidth;
+    if (!isVisible)
+      strip.scrollLeft = selected.offsetLeft - (strip.clientWidth - selected.offsetWidth) / 2;
+  };
+  const paint = () => {
+    const scrollLeft = strip.scrollLeft;
+    strip.replaceChildren();
+    const current = api.profile().code.trim();
+    for (const mira of crosshairChoices(current, readCollection())) {
+      const isCurrent = mira.code === current;
+      const b = el('button', 'mira-chip' + (isCurrent ? ' selected' : ''));
+      b.type = 'button';
+      b.title = mira.name;
+      b.setAttribute('aria-label', 'Mira ' + mira.name);
+      b.setAttribute('aria-pressed', String(isCurrent));
+      const canvas = el('canvas');
+      canvas.width = 56;
+      canvas.height = 36;
+      try {
+        cross(canvas.getContext('2d'), 28, 18, mira.code);
+      } catch (error) {
+        console.warn('Mira con código inválido:', mira.name, error);
+      }
+      b.append(canvas);
+      b.onclick = () => {
+        api.updateProfile({ code: mira.code });
+        paint();
+      };
+      strip.append(b);
+    }
+    requestAnimationFrame(() => revealSelected(scrollLeft));
+  };
+  return { row: settingRow('Mira', [strip]), paint };
+}
+
+function interfaceRow() {
+  const swatches = el('div', 'ui-swatches');
+  swatches.setAttribute('role', 'group');
+  const paint = () => {
+    const current = document.body.dataset.palette;
+    swatches.replaceChildren();
+    const ids = [
+      'rose',
+      'blue',
+      'green',
+      'violet',
+      ...(current?.startsWith('team-') ? [current] : []),
+    ];
+    for (const id of ids) {
+      const p = palettes[id];
+      if (!p) continue;
+      const b = el('button', 'ui-swatch' + (id === current ? ' selected' : ''));
+      b.type = 'button';
+      b.title = p.label || p.name || id;
+      b.setAttribute('aria-label', 'Interfaz ' + (p.label || id));
+      b.setAttribute('aria-pressed', String(id === current));
+      b.style.setProperty('--swatch', p.accent);
+      b.onclick = () => {
+        applyPalette(id);
+        paint();
+      };
+      swatches.append(b);
+    }
+  };
+  return { row: settingRow('Color de interfaz', [swatches]), paint };
+}
+
+/** Genre and "Otra emisora", driving the same AmbientMusic as the header control. */
+function musicRow(music) {
+  const select = music.genreSelect.cloneNode(true);
+  select.className = 'music-genre arena-music';
+  select.id = 'arena-music';
+  select.removeAttribute('aria-label');
+  const skip = el('button', 'arena-music-skip');
+  skip.type = 'button';
+  skip.append(musicIcon('skip'), el('span', '', SKIP_LABEL));
+  const paint = () => {
+    const isAvailable = music.genre !== AMBIENT_GENRE;
+    select.value = music.genre;
+    skip.setAttribute('aria-disabled', String(!isAvailable));
+    skip.title = isAvailable ? SKIP_LABEL : SKIP_UNAVAILABLE;
+  };
+  select.onchange = async () => {
+    music.genreSelect.value = select.value;
+    const switching = music.setGenre(select.value);
+    paint();
+    await switching;
+    if (!music.enabled) await music.setEnabled(true);
+    paint();
+  };
+  skip.onclick = () => {
+    if (skip.getAttribute('aria-disabled') !== 'true') music.skipStation();
+  };
+  return { row: settingRow('Música', [select, skip], { labelFor: 'arena-music' }), paint };
 }
 
 /**
@@ -61,7 +195,6 @@ export function installArenaSettings(container, api) {
 
   // --- before the round
   const pre = el('div', 'settings-block pre-round');
-  pre.append(el('h3', '', 'Antes de empezar'));
   const ammo = segmented(
     'Munición',
     { reload: 'Recargable', infinite: 'Infinita' },
@@ -74,97 +207,21 @@ export function installArenaSettings(container, api) {
     api.options().timed ? 'timed' : 'endless',
     (value) => api.setOption('timed', value === 'timed'),
   );
-  pre.append(ammo.row, timed.row);
+  pre.append(el('h3', 'entry-section-title', 'Antes de empezar'), ammo.row, timed.row);
 
   // --- always
-  const general = el('div', 'settings-block');
-  general.append(el('h3', '', 'Ajustes'));
-
-  const sensRow = el('div', 'setting-row');
-  const sensLabel = el('label', 'setting-label', 'Sensibilidad');
-  const sens = el('input');
-  sens.type = 'number';
-  sens.min = '0.01';
-  sens.max = '10';
-  sens.step = '0.001';
-  sens.id = 'arena-sens';
-  sensLabel.htmlFor = 'arena-sens';
-  const sensHint = el('small', 'setting-hint');
-  const paintSens = () => {
-    const profile = api.profile();
-    sens.value = profile.sens;
-    const edpi = Math.round(profile.sens * (profile.dpi || 800));
-    sensHint.textContent = `eDPI ${edpi} · ${((360 / (0.07 * profile.sens * (profile.dpi || 800))) * 2.54).toFixed(1)} cm/360°`;
-  };
-  sens.onchange = () => {
-    const value = Number(sens.value);
-    if (value >= 0.01 && value <= 10) api.updateProfile({ sens: value });
-    paintSens();
-  };
-  sensRow.append(sensLabel, sens, sensHint);
-
-  const miraRow = el('div', 'setting-row mira-row');
-  miraRow.append(el('span', 'setting-label', 'Mira'));
-  const miras = el('div', 'mira-strip');
-  const paintMiras = () => {
-    miras.replaceChildren();
-    const current = api.profile().code;
-    const list = [
-      { name: 'Tu mira', code: current },
-      ...quickMiras,
-      ...read('wa-crosshairs', []),
-    ].filter((m, i, all) => all.findIndex((n) => n.code === m.code) === i);
-    for (const mira of list.slice(0, 12)) {
-      const b = el('button', 'mira-chip' + (mira.code === current ? ' selected' : ''));
-      b.type = 'button';
-      b.title = mira.name;
-      b.setAttribute('aria-label', 'Mira ' + mira.name);
-      b.setAttribute('aria-pressed', String(mira.code === current));
-      const canvas = el('canvas');
-      canvas.width = 56;
-      canvas.height = 36;
-      try {
-        cross(canvas.getContext('2d'), 28, 18, mira.code);
-      } catch {}
-      b.append(canvas);
-      b.onclick = () => {
-        api.updateProfile({ code: mira.code });
-        paintMiras();
-      };
-      miras.append(b);
-    }
-  };
-  miraRow.append(miras);
-
-  const outline = segmented('Contorno enemigo', outlineChoices, api.outline(), (v) => api.setOutline(v));
+  const sens = sensitivityRow(api);
+  const miras = miraRow(api);
+  const outline = segmented('Contorno enemigo', outlineChoices, api.outline(), (v) =>
+    api.setOutline(v),
+  );
   outline.row.classList.add('outline-row');
-
-  const uiRow = el('div', 'setting-row');
-  uiRow.append(el('span', 'setting-label', 'Color de interfaz'));
-  const swatches = el('div', 'ui-swatches');
-  const paintUi = () => {
-    const current = document.body.dataset.palette;
-    swatches.replaceChildren();
-    const ids = ['rose', 'blue', 'green', 'violet', ...(current?.startsWith('team-') ? [current] : [])];
-    for (const id of ids) {
-      const p = palettes[id];
-      if (!p) continue;
-      const b = el('button', 'ui-swatch' + (id === current ? ' selected' : ''));
-      b.type = 'button';
-      b.title = p.label || p.name || id;
-      b.setAttribute('aria-label', 'Interfaz ' + (p.label || id));
-      b.style.setProperty('--swatch', p.accent);
-      b.onclick = () => {
-        applyPalette(id);
-        paintUi();
-      };
-      swatches.append(b);
-    }
-  };
-  uiRow.append(swatches);
-
-  const side = segmented('Lado del arma', { right: 'Derecha', left: 'Izquierda' }, api.weaponSide(), (v) =>
-    api.setWeaponSide(v),
+  const ui = interfaceRow();
+  const side = segmented(
+    'Lado del arma',
+    { right: 'Derecha', left: 'Izquierda' },
+    api.weaponSide(),
+    (v) => api.setWeaponSide(v),
   );
   const quality = segmented(
     'Rendimiento',
@@ -175,29 +232,15 @@ export function installArenaSettings(container, api) {
       api.setQuality(v);
     },
   );
+  const music = api.music?.()?.genreSelect ? musicRow(api.music()) : null;
 
-  const rows = [sensRow, miraRow, outline.row, uiRow, side.row, quality.row];
-  const music = api.music?.();
-  let musicSelect = null;
-  if (music?.genreSelect) {
-    const musicRow = el('div', 'setting-row');
-    musicRow.append(el('span', 'setting-label', 'Música'));
-    musicSelect = music.genreSelect.cloneNode(true);
-    musicSelect.className = 'music-genre arena-music';
-    musicSelect.onchange = () => {
-      music.genreSelect.value = musicSelect.value;
-      if (!music.enabled) music.button.click();
-      music.setGenre(musicSelect.value);
-    };
-    const skip = el('button', 'music-skip', '⏭');
-    skip.type = 'button';
-    skip.title = 'Otra emisora';
-    skip.setAttribute('aria-label', 'Otra emisora');
-    skip.onclick = () => music.nextStation();
-    musicRow.append(musicSelect, skip);
-    rows.push(musicRow);
-  }
-  general.append(...rows);
+  const general = el('div', 'settings-block');
+  general.append(
+    el('h3', 'entry-section-title', 'Ajustes'),
+    settingsGroup('Puntería', [sens.row, miras.row]),
+    settingsGroup('Visual', [outline.row, ui.row, side.row]),
+    settingsGroup('Sistema', [quality.row, ...(music ? [music.row] : [])]),
+  );
   root.append(pre, general);
   container.append(root);
 
@@ -210,10 +253,10 @@ export function installArenaSettings(container, api) {
       timed.paint(api.options().timed ? 'timed' : 'endless');
       outline.paint(api.outline());
       side.paint(api.weaponSide());
-      paintSens();
-      paintMiras();
-      paintUi();
-      if (musicSelect) musicSelect.value = api.music().genre;
+      sens.paint();
+      miras.paint();
+      ui.paint();
+      music?.paint();
     },
     dispose() {
       root.remove();

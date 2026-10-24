@@ -43,15 +43,47 @@ export const modeGuides = [
   {goal:'Esquiva todas las flashes y cegueras del juego y elimina al enemigo que asoma después.',tip:'Flashes (Phoenix, Skye, Breach, KAY/O, Yoru, Vyse): gira la cara antes de que exploten. Paranoia: sal de su línea. Leer, Dizzy y Prowler: dispárales. Fakeout: no le dispares al señuelo.',score:'100 por esquiva, 75 por habilidad destruida, 150 por baja (200 a la cabeza). Si te ciegan, pierdes la racha.'},
   {goal:'Elimina agentes que hacen strafe, se agachan, asoman tras coberturas y aparecen en ventanas y torres.',tip:'Los de las ventanas solo se quedan un momento. Ajusta la altura de la mira al subir y bajar la vista.',score:'Cada baja suma un acierto. 150 de vida: el daño depende del arma, la zona y la distancia.'},
 ];
+const MOVE_KEYS = [['W A S D', 'Moverse'], ['Espacio', 'Saltar'], ['Ctrl', 'Agacharse'], ['Shift', 'Caminar']];
+const SHOOT_KEYS = [['M1', 'Disparar'], ['R', 'Recargar']];
+const PAUSE_KEY = ['Esc', 'Pausa'];
+
+const el = (tag, cls, text) => {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
+/** A collapsed row: title and a one-line preview; the detail opens below. */
+function disclosure(title, preview, ...content) {
+  const details = el('details', 'brief-item');
+  const summary = el('summary');
+  summary.append(el('span', 'brief-title', title), el('span', 'brief-preview', preview));
+  details.append(summary, el('div', 'brief-body'));
+  details.lastChild.append(...content);
+  return details;
+}
+
+function keyGrid(rows) {
+  const grid = el('dl', 'simple-controls');
+  for (const [keys, action] of rows) {
+    const row = el('div');
+    const keyCell = el('dt');
+    for (const key of keys.split(' ')) keyCell.append(el('kbd', '', key));
+    row.append(keyCell, el('dd', '', action));
+    grid.append(row);
+  }
+  return grid;
+}
+
 export function renderModeGuide(node, mode) {
- const guide=modeGuides[mode],movement=[7,8,9].includes(mode);
- node.replaceChildren();
- const title=document.createElement('small');title.className='brief-label';title.textContent='TECLAS';
- const controls=document.createElement('div');controls.className='simple-controls';
- const rows=[['W A S D','Moverse'],['Espacio','Saltar'],['Ctrl','Agacharse'],['Shift','Caminar'],['Esc','Pausa']];
- if(!movement)rows.push(['M1','Disparar'],['R','Recargar']);
- for(const [keys,label] of rows){const row=document.createElement('div');const keybox=document.createElement('span');for(const key of keys.split(' ')){const k=document.createElement('kbd');k.textContent=key;keybox.append(k);}const text=document.createElement('span');text.textContent=label;row.append(keybox,text);controls.append(row);}
- const tip=document.createElement('p');tip.textContent=guide.tip;
- const score=document.createElement('p');score.textContent=guide.score;score.className='brief-score';
- node.append(title,controls,tip,score);node.hidden=false;
+  const guide = modeGuides[mode];
+  const movement = [7, 8, 9].includes(mode);
+  const rows = [...MOVE_KEYS, ...(movement ? [] : SHOOT_KEYS), PAUSE_KEY];
+  const preview = rows.map(([keys]) => keys.replaceAll(' ', '')).join(' · ');
+  node.replaceChildren(
+    disclosure('Cómo se juega', guide.goal, el('p', '', guide.tip), el('p', 'brief-score', guide.score)),
+    disclosure('Teclas', preview, keyGrid(rows)),
+  );
+  node.hidden = false;
 }

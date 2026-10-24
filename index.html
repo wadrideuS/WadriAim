@@ -210,24 +210,22 @@
         <div id="hit-feedback" role="status"></div>
         <div id="asset-status" role="status"></div>
         <div id="overlay">
-          <div class="eyebrow">HAZ QUE CADA DISPARO CUENTE</div>
+          <span class="eyebrow entry-mode-tag">Entrenamiento</span>
           <h2 id="result">¿Listo para entrar en ritmo?</h2>
           <p id="instructions"></p>
           <div id="loadout">
-            <label id="weaponlabel">ELIGE TU ARMA</label>
-            <div id="weapons" role="group" aria-labelledby="weaponlabel"></div>
-            <p id="weaponinfo"></p>
-
+            <section class="weapon-picker" aria-labelledby="weaponlabel">
+              <h3 id="weaponlabel" class="entry-section-title">Elige tu arma</h3>
+              <div id="weapons" role="group" aria-labelledby="weaponlabel"></div>
+              <p id="weaponinfo" aria-live="polite"></p>
+            </section>
           </div>
           <div class="entry-buttons">
-            <button id="start" class="primary">Entrar a la arena ↗</button
-            ><button id="startfull" class="fullscreen-entry">PANTALLA COMPLETA</button>
+            <button id="startfull" type="button" class="fullscreen-entry" title="Pantalla completa">Pantalla completa</button
+            ><button id="start" type="button" class="primary">Iniciar</button>
           </div>
-          <button id="exit-arena" type="button" class="exit-arena">Salir</button>
+          <button id="exit-arena" type="button" class="exit-arena">Volver al menú</button>
           <p id="entrynotice" role="status"></p>
-          <p class="controls">
-            WASD · Shift caminar · Ctrl agacharse · Espacio saltar · R recargar · ESC pausar
-          </p>
         </div>
       </div>
       <div class="gamefoot">
