@@ -1,0 +1,14 @@
+node_modules
+.git
+.openai
+.vercel
+assets/source-audio
+tests
+docs
+scripts
+INICIAR.cmd
+*.zip
+*.log
+.env*
+public/models/chamber
+.github

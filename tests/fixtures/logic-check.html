@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head><meta charset="utf-8" /><title>Comprobación de lógica</title></head>
+  <body style="margin:0">
+    <div style="width:960px;height:540px"><canvas id="c" style="width:100%;height:100%"></canvas></div>
+    <script type="module">
+      // Headless checks with the real renderer: tracking, damage per zone, spray.
+      import { ArenaRenderer } from '/src/renderer/ArenaRenderer.js';
+      import { TrainingSession } from '/src/game/TrainingSession.js';
+      const r = new ArenaRenderer(document.getElementById('c'));
+      const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
+      for (let i = 0; i < 300 && !r.agentTemplates.enemy; i++) await wait(100);
+      const s = new TrainingSession();
+      s.hitTest = (offset) => {
+        r.sync(s);
+        return r.cast(offset);
+      };
+      const aimAt = (t, dy = 0, ox = 0) => {
+        const dx = t.x + ox - s.position.x, dz = t.z - s.position.z, y = t.y + dy - s.position.y;
+        s.yaw = Math.atan2(-dx, -dz);
+        s.pitch = Math.atan2(y, Math.hypot(dx, dz));
+      };
+      const out = {};
+      // tracking
+      s.reset(2, 'vandal');
+      s.start();
+      for (let i = 0; i < 60; i++) {
+        aimAt(s.targets[0]);
+        s.tick(1 / 60, { keys: new Set(), fire: true });
+      }
+      out.tracking = { trackTime: +s.trackTime.toFixed(2), hits: s.hits, ticks: s.events.filter((e) => e.type === 'track-hit').length };
+      // damage: Flick Shot (1 agent), body shots with Vandal
+      const shots = (mode, weapon, part) => {
+        s.reset(mode, weapon);
+        s.start();
+        r.render(s, 1 / 60);
+        const t = s.targets[0];
+        const dy = { head: 0.03, body: -0.45, legs: -1.2 }[part];
+        let n = 0;
+        while (!t.dead && n < 12) {
+          aimAt(t, dy, part === 'legs' ? 0.12 : 0);
+          s.cooldown = 0;
+          s.lastShotAt = -10; // tap fire: no spray
+          s.punch = { x: 0, y: 0 };
+          s.shoot();
+          n++;
+        }
+        return { shots: n, dead: t.dead, distance: +Math.hypot(t.x, t.z - 2).toFixed(1) };
+      };
+      out.vandalBody = shots(1, 'vandal', 'body');
+      out.vandalHead = shots(1, 'vandal', 'head');
+      out.vandalLegs = shots(1, 'vandal', 'legs');
+      out.ghostHead = shots(1, 'ghost', 'head');
+      out.sheriffHead = shots(1, 'sheriff', 'head');
+      out.sheriffBody = shots(1, 'sheriff', 'body');
+      // spray climbs
+      s.reset(1, 'vandal');
+      s.start();
+      const ys = [];
+      for (let i = 0; i < 12; i++) {
+        s.cooldown = 0;
+        s.elapsed += 0.1;
+        s.shoot();
+        ys.push(+s.punch.y.toFixed(2));
+      }
+      out.punch = ys;
+      window.info = out;
+      window.done = true;
+    </script>
+  </body>
+</html>

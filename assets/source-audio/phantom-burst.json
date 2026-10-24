@@ -1,0 +1,47 @@
+{
+  "originalFile": "Valorant - Weapon Phantom - Gaming Sound Effect Valorant (HD) Sound Effects.mp3",
+  "sha256": "31bd2a6f1fcb6979f1e1bde7361ca6e143332ec32e0d4ad304a3fb598e3778d8",
+  "cuts": {
+    "burst0": [
+      5.335,
+      5.425909
+    ],
+    "burst1": [
+      5.425909,
+      5.516818
+    ],
+    "burst2": [
+      5.516818,
+      5.607727
+    ],
+    "burst3": [
+      5.607727,
+      5.698636
+    ],
+    "burst4": [
+      5.698636,
+      5.789545
+    ],
+    "burst5": [
+      5.789545,
+      5.880455
+    ],
+    "burst6": [
+      5.880455,
+      5.971364
+    ],
+    "burst7": [
+      5.971364,
+      6.062273
+    ],
+    "burst8": [
+      6.062273,
+      6.153182
+    ],
+    "burst9": [
+      6.153182,
+      6.244091
+    ]
+  },
+  "notes": "Phantom automatic cycles from the user-marked 5–6s burst, 11 rounds/second; each segment is used for one automatic bullet."
+}

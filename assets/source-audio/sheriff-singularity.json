@@ -1,0 +1,27 @@
+{
+  "originalFile": "SINGULARITY SHERIFF SOUND EFFECT #whiffgodplays #valorant.mp3",
+  "sha256": "f5bea5b3b3e4288c588fcc384e811ca537bffadd4b5fb5a31efa499249456d2a",
+  "cuts": {
+    "kill1": [
+      4.697,
+      6.25
+    ],
+    "kill2": [
+      6.417,
+      8.02
+    ],
+    "kill3": [
+      8.187,
+      9.75
+    ],
+    "kill4": [
+      9.897,
+      11.5
+    ],
+    "kill5": [
+      11.657,
+      13.4
+    ]
+  },
+  "notes": "User marks 0:04, 0:06, 0:08, 0:09, 0:11. Attack-aligned combined shot/kill cues, exclusive to Sheriff. Repeat after stage five; skip the extra air shot on a kill."
+}

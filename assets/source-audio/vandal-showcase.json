@@ -1,0 +1,43 @@
+{
+  "originalFile": "Sovereign Vandal VALORANT FORSAKEN SKIN New Sovereign Skins Showcase.mp3",
+  "sha256": "ff4486248ceb95f172b6a36caab453a658217020e9115c58768bd7580428c2fd",
+  "cuts": {
+    "shot": [
+      87.947,
+      88.427
+    ],
+    "bodyhit": [
+      28.881,
+      29.361
+    ],
+    "headshot": [
+      32.593,
+      33.073
+    ],
+    "kill1": [
+      23.494,
+      25.35
+    ],
+    "kill2": [
+      26.107,
+      27.95
+    ],
+    "kill3": [
+      30.246,
+      32.05
+    ],
+    "kill4": [
+      32.593,
+      34.5
+    ],
+    "reload": [
+      35.446,
+      37.7
+    ],
+    "kill5": [
+      39.579,
+      43.5
+    ]
+  },
+  "notes": "Isolated tap at 87.947s; automatic fire reuses one tap per simulated round. Combined hit/kill clips replace air shots on hits, so attacks are never layered. Exclusive to Vandal."
+}

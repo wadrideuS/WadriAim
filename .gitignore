@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.vite/
+*.log
+.env
+.env.*
+!.env.example
+.vercel/
+.vercel
+
+# Local tooling and temporary exports
+.openai/
+*.zip

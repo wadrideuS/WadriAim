@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>WadriAim — Tu zona de calentamiento</title>
+    <meta
+      name="description"
+      content="WadriAim: arena de entrenamiento FPS con sensibilidad personalizada y galería de miras."
+    />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#"
+        >⌖ <b>Wadri<span>Aim</span></b></a
+      >
+      <nav>
+        <button id="home" class="active">Entrenamiento</button
+        ><button id="progress">Mi progreso</button><button id="rankingnav">Ranking</button><button id="crosshairsnav">Miras</button>
+      </nav>
+      <div>
+        <button id="theme" aria-label="Cambiar tema">☼</button
+        ><button id="profile" class="secondary">W &nbsp; Mi perfil ↗</button>
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">● TU PRÓXIMA PARTIDA EMPIEZA AQUÍ</div>
+          <h1>Menos espera.<br />Más <em>headshots.</em></h1>
+          <p>
+            Convierte el tiempo en cola en tu mejor calentamiento.<br />Elige un ejercicio,
+            encuentra tu ritmo y entra listo.
+          </p>
+          <button id="quick" class="primary">Empezar a calentar &nbsp; ↗</button
+          ><small>◷ Sesiones de 45 y 60 segundos &nbsp; ◇ Sin registro. Solo aim.</small>
+        </div>
+        <div class="hero-art">
+          <div class="ring"></div>
+          <div class="ring two"></div>
+          <i class="ball a"></i><i class="ball b"></i><i class="ball c"></i
+          ><span class="cross">＋</span><label>↗ ENCUENTRA TU ZONA</label
+          ><small>PRECISIÓN EN CADA MOVIMIENTO <span>01 / 15</span></small>
+        </div>
+      </section>
+      <section id="gallery">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">EL CAMPO ES TUYO</div>
+            <h2>Tu galería de entrenamiento <sup>15</sup></h2>
+          </div>
+          <p>Un objetivo. Mejorar cada día.</p>
+        </div>
+        <div class="filterbar">
+          <div id="filters"></div>
+          <input id="search" placeholder="⌕ Buscar ejercicio…" aria-label="Buscar ejercicio" />
+        </div>
+        <div id="cards"></div>
+      </section>
+      <section id="ranking" hidden aria-labelledby="ranking-title"></section>
+      <section id="stats" hidden>
+        <h2>Tu progreso</h2>
+        <div id="history"></div>
+      </section>
+      <section class="banner">
+        <span>⌖</span>
+        <div>
+          <h3>Tu sens. Tu mira. Tu zona.</h3>
+          <p>Trae tu configuración de VALORANT y siéntete como en casa.</p>
+        </div>
+        <button id="configure" class="secondary">Configurar mi perfil ↗</button>
+      </section>
+      <footer>
+        <a class="brand" href="#"
+          >⌖ <b>Wadri<span>Aim</span></b></a
+        ><span>Hecho para esos «una más».</span
+        ><small>Proyecto independiente. Sin afiliación con Riot Games.</small>
+      </footer>
+    </main>
+    <dialog id="settings">
+      <form id="form">
+        <div class="modal-head">
+          <h2>Tu configuración</h2>
+          <button type="button" id="close">✕</button>
+        </div>
+        <p>Sin cuentas. Se guarda en este navegador.</p>
+        <label>Nombre de jugador<input id="name" maxlength="24" placeholder="Tu nombre" /></label>
+        <div class="row">
+          <label
+            >Sensibilidad VALORANT<input
+              id="sens"
+              type="number"
+              min="0.01"
+              max="10"
+              step="0.001"
+              required /></label
+          ><label>DPI<input id="dpi" type="number" min="100" max="32000" required /></label>
+        </div>
+        <section id="crosshair-library">
+          <div class="library-heading">
+            <h3>Galería de miras</h3>
+            <span>Elige tu estilo</span>
+          </div>
+          <div id="crosshair-presets"></div>
+          <p id="crosshair-status" role="status">
+            Selecciona una mira para previsualizarla. Guarda la configuración para usarla.
+          </p>
+        </section>
+        <label>Código de mira<textarea id="code" rows="3"></textarea></label>
+        <div class="save-crosshair">
+          <input
+            id="crosshair-name"
+            maxlength="24"
+            placeholder="Nombre para tu mira"
+            aria-label="Nombre para tu mira"
+          /><button type="button" id="save-crosshair" class="secondary">
+            Guardar en mi colección ＋
+          </button>
+        </div>
+        <div class="preview">
+          <canvas id="preview" width="180" height="80"></canvas><span>Vista previa de tu mira</span>
+        </div>
+        <p id="error" role="alert"></p>
+        <button class="primary">Guardar configuración ↗</button>
+      </form>
+    </dialog>
+    <dialog id="game">
+      <div class="gamehead">
+        <strong id="title"></strong><span id="counter">60s · 0 aciertos</span
+        ><button id="exit">Salir ✕</button>
+      </div>
+      <div id="arena">
+        <canvas id="canvas" aria-label="Arena tridimensional"></canvas
+        ><canvas id="game-crosshair" aria-hidden="true"></canvas>
+        <div id="game-hud">
+          <div class="round-clock" aria-label="Tiempo restante">
+            <small>TIEMPO</small><strong id="round-clock">1:00</strong>
+          </div>
+          <div class="hud-impacts"><small>Impactos</small><strong id="hud-hits">0</strong><span id="hud-headshots">0 headshots</span></div>
+          <div class="hud-right">
+            <small>TIEMPO</small><strong id="hud-time">1:00</strong><span id="hud-accuracy"></span>
+          </div>
+          <div class="hud-bottom">
+            <span id="hud-profile"></span><strong id="hud-ammo"></strong>
+          </div>
+        </div>
+        <div id="hit-feedback" role="status"></div>
+        <div id="asset-status" role="status"></div>
+        <div id="overlay">
+          <div class="eyebrow">HAZ QUE CADA DISPARO CUENTE</div>
+          <h2 id="result">¿Listo para entrar en ritmo?</h2>
+          <p id="instructions"></p>
+          <div id="loadout">
+            <label id="weaponlabel">ELIGE TU ARMA</label>
+            <div id="weapons" role="group" aria-labelledby="weaponlabel"></div>
+            <p id="weaponinfo"></p>
+
+          </div>
+          <div class="entry-buttons">
+            <button id="start" class="primary">Entrar a la arena ↗</button
+            ><button id="startfull" class="fullscreen-entry">PANTALLA COMPLETA</button>
+          </div>
+          <button id="exit-arena" type="button" class="exit-arena">Salir</button>
+          <p id="entrynotice" role="status"></p>
+          <p class="controls">
+            WASD · Shift caminar · Ctrl agacharse · Espacio saltar · R recargar · ESC pausar
+          </p>
+        </div>
+      </div>
+      <div class="gamefoot">
+        WADRIAIM / TRAINING LAB <span>60 SEGUNDOS · TU MEJOR VERSIÓN</span>
+      </div>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

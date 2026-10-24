@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head><meta charset="utf-8" /><title>Vista de modo</title>
+  <style>html,body{margin:0;background:#111}#w{width:100vw;height:100vh;position:relative}canvas{width:100%;height:100%;display:block}#blind{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}</style></head>
+  <body>
+    <div id="w"><canvas id="c"></canvas><div id="blind"></div></div>
+    <script type="module">
+      // Simulates a mode for ?t= seconds and renders the last frame: ?mode=14&t=3&yaw=0&pitch=0.05
+      import { ArenaRenderer } from '/src/renderer/ArenaRenderer.js';
+      import { TrainingSession } from '/src/game/TrainingSession.js';
+      const q = new URLSearchParams(location.search);
+      const r = new ArenaRenderer(document.getElementById('c'));
+      const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
+      for (let i = 0; i < 300 && !r.agentTemplates.enemy; i++) await wait(100);
+      let seed = 7;
+      const s = new TrainingSession({ random: () => ((seed = (seed * 16807) % 2147483647) / 2147483647) });
+      s.hitTest = (o) => { r.sync(s); return r.cast(o); };
+      const mode = Number(q.get('mode') || 14);
+      s.reset(mode, 'vandal');
+      s.start();
+      s.yaw = Number(q.get('yaw') || 0);
+      s.pitch = Number(q.get('pitch') || 0.05);
+      const steps = Math.round(Number(q.get('t') || 2) * 30);
+      const log = [];
+      for (let i = 0; i < steps; i++) {
+        s.tick(1 / 30, { keys: new Set(), fire: false });
+        // animate without drawing every frame (keeps headless GPU fast)
+        r.frameDt = 1 / 30;
+        r.inRender = true;
+        r.sync(s);
+        r.inRender = false;
+        for (const e of s.events) if (!e.logged) { e.logged = true; if (e.type.startsWith('flash')) log.push(e.type + ':' + e.kind + '@' + e.time.toFixed(1)); }
+      }
+      r.render(s, 1 / 30);
+      document.getElementById('blind').style.opacity = s.drill ? Math.min(1, s.drill.blind / 0.45) : 0;
+      window.info = {
+        targets: s.targets.map((t) => ({ k: t.kind || t.behaviour, x: +t.x.toFixed(1), y: +t.y.toFixed(1), crouch: t.crouch, dead: t.dead })),
+        drill: s.drill && { callout: s.drill.callout?.name, dodged: s.drill.dodged, flashed: s.drill.flashed, visuals: s.drill.visuals.length, near: +s.drill.nearsight.toFixed(2) },
+        log,
+      };
+      window.done = true;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#090a0d;color:#ddd;font:14px system-ui}nav{position:absolute;z-index:1;top:20px;left:20px}button{padding:12px;background:#222;color:#ddd;border:1px solid #555;border-radius:8px;margin-right:8px}canvas{display:block}</style></head><body><nav id="controls"></nav><canvas></canvas><script type="module">
+import * as THREE from 'three';import {ModelRepository} from '/src/renderer/ModelRepository.js';
+const repo=new ModelRepository(),renderer=new THREE.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.toneMapping=THREE.ACESFilmicToneMapping;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#12131a');scene.add(new THREE.HemisphereLight(0xffffff,0x4d465b,2));const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(1,3,2);scene.add(light);
+const camera=new THREE.PerspectiveCamera(THREE.MathUtils.radToDeg(2*Math.atan(Math.tan(THREE.MathUtils.degToRad(75)/2)/(innerWidth/innerHeight))),innerWidth/innerHeight,.01,10);
+let current=new THREE.Group();scene.add(current);
+async function equip(id){const [weapon,arms]=await Promise.all([repo.load(id),id==='karambit'?Promise.resolve({object:new THREE.Group()}):repo.load(new URLSearchParams(location.search).get('agent') || 'agent_sage')]);scene.remove(current);current=new THREE.Group();arms.object.userData.fitToWeapon?.(weapon.object,id);current.add(weapon.object,arms.object);scene.add(current);document.title='Chamber · '+id;}
+for(const id of ['ghost','sheriff','phantom','vandal','karambit']){const b=document.createElement('button');b.textContent=id;b.onclick=()=>equip(id);document.getElementById('controls').append(b);}
+await equip('vandal');renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+</script></body></html>

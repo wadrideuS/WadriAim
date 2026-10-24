@@ -1,0 +1,28 @@
+{
+  "source": "user-provided",
+  "file": "Forsaken Skin Ace Sound Valorant.mp3",
+  "sha256": "eda3599be9c1489f5416b7239e646c9aaa113308f3faa6de0027201ca38c28c3",
+  "cuts": [
+    [
+      5.98,
+      7.5
+    ],
+    [
+      7.55,
+      8.97
+    ],
+    [
+      8.98,
+      10.48
+    ],
+    [
+      10.49,
+      11.97
+    ],
+    [
+      11.98,
+      15.78
+    ]
+  ],
+  "usage": "eliminations and streaks; never gunshots"
+}

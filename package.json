@@ -1,0 +1,29 @@
+{
+  "name": "wadriaim",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Entrenamiento de aim FPS con perfiles locales y recursos 3D",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/*.test.js",
+    "format": "prettier --write src tests scripts index.html vite.config.js",
+    "format:check": "prettier --check src tests scripts index.html vite.config.js",
+    "assets:check": "node scripts/check-assets.mjs",
+    "assets:import": "node scripts/import-asset.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "mpg123-decoder": "1.0.3",
+    "prettier": "3.9.10",
+    "vite": "8.3.5"
+  }
+}

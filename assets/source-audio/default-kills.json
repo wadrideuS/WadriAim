@@ -1,0 +1,28 @@
+{
+  "source": "user-provided",
+  "file": "Valorant default kill sounds.mp3",
+  "sha256": "c37a30f147ce1b959c2597be8f0353123baddaeb123a396b42f52349d5ee8e88",
+  "cuts": [
+    [
+      0.325,
+      1.965
+    ],
+    [
+      1.975,
+      3.635
+    ],
+    [
+      3.645,
+      5.295
+    ],
+    [
+      5.305,
+      6.805
+    ],
+    [
+      6.815,
+      11.8
+    ]
+  ],
+  "usage": "all weapons: 1,2,3,4,5,1 loop"
+}

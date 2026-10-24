@@ -1,0 +1,236 @@
+{
+  "vandal": {
+    "source": null,
+    "kind": "weapon",
+    "path": "models/vandal/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "3e256f168bbdd5f5494d1fddd798a80d3c3eb46268e3f623abad63bf343654cb",
+    "viewmodel": {
+      "position": [
+        0.22,
+        -0.13,
+        -0.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 0.95,
+      "autoOrient": true
+    },
+    "originalFile": "foresaken_vandal_white.glb",
+    "providedBy": "user-upload",
+    "licenseStatus": "not-supplied-in-archive",
+    "requestedSource": "https://sketchfab.com/ILilMitch/collections/valorant-vandal-models-08dea74e797d4d7c8c55f0a1b167af6a"
+  },
+  "phantom": {
+    "source": null,
+    "kind": "weapon",
+    "path": "models/phantom/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "28c0e8f5b092c2b284b6a0f04375ae4b3dda424b7884293e32df772082a25fc6",
+    "viewmodel": {
+      "position": [
+        0.22,
+        -0.13,
+        -0.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 0.95,
+      "autoOrient": true
+    },
+    "originalFile": "valorant_phantom_blastx.glb",
+    "providedBy": "user-upload",
+    "licenseStatus": "not-supplied-in-archive",
+    "requestedSource": "https://sketchfab.com/3d-models/valorant-weapon-phantom-rifle-fbc7d6605464413eb290b918c8b617b3"
+  },
+  "sheriff": {
+    "source": "https://sketchfab.com/3d-models/valorant-weapon-sheriff-pistol-9df78637046a4f88bb0a417a621b5009",
+    "kind": "weapon",
+    "path": "models/sheriff/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "9b1e3ce6fa7e409425cf66fd982ff30f1cec2b6f06fe9a7eaa5d7cc4b5e215ad",
+    "viewmodel": {
+      "position": [
+        0.22,
+        -0.13,
+        -0.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 0.52,
+      "autoOrient": true
+    },
+    "originalFile": "valorant_weapon_sheriff_pistol.glb",
+    "providedBy": "user-upload",
+    "licenseStatus": "not-supplied-in-archive"
+  },
+  "ghost": {
+    "source": "https://sketchfab.com/3d-models/valorant-weapon-ghost-pistol-fae6c93f0a2d4675845a4bd7fbb34af2",
+    "kind": "weapon",
+    "path": "models/ghost/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "373caafbac1d6a369f55f5a5da5d54d9994b817d0e5123a34598d096bfece22c",
+    "viewmodel": {
+      "position": [
+        0.22,
+        -0.13,
+        -0.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 0.6,
+      "autoOrient": true
+    },
+    "originalFile": "valorant_weapon_ghost_pistol.glb",
+    "providedBy": "user-upload",
+    "licenseStatus": "not-supplied-in-archive"
+  },
+  "guardian": {
+    "source": "https://sketchfab.com/3d-models/valorant-weapon-guardian-semi-automatic-rifle-bd5a8882726748008c67e4e6f509d6c0",
+    "kind": "weapon",
+    "path": "models/guardian/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "a9c58508c253e566d943ba491988b0dcabc8aef87d4bf3a99c02dab9ae11c611",
+    "viewmodel": {
+      "position": [
+        0.22,
+        -0.13,
+        -0.7
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 0.95,
+      "autoOrient": true
+    },
+    "originalFile": "valorant_weapon_guardian_semi-automatic_rifle.glb",
+    "providedBy": "user-upload",
+    "licenseStatus": "not-supplied-in-archive"
+  },
+  "chamber": {
+    "source": null,
+    "kind": "arms",
+    "path": "models/chamber/model.glb",
+    "status": "imported",
+    "author": null,
+    "license": null,
+    "sha256": "48b4048ee06a13a79652e7a3f6340017cee8142e7756b8bba396618297088e17",
+    "viewmodel": {
+      "position": [
+        0,
+        -0.3,
+        -0.45
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "length": 1.7,
+      "autoOrient": false
+    },
+    "originalFile": "chamber_valorant_3d_model.glb",
+    "providedBy": "user-upload",
+    "character": "Chamber",
+    "licenseStatus": "not-supplied-in-archive"
+  },
+  "fpshands": {
+    "kind": "arms",
+    "path": "models/fpshands/model.glb",
+    "sha256": "d65f4eaef8e09f63b1d33f9578bcb9597342ef33f20d9db8289f4d841ceaa739",
+    "author": "BarcodeGames",
+    "license": "CC-BY-4.0",
+    "source": "https://sketchfab.com/3d-models/m4-fps-weapon-animations-pack-v1-662fc74dda2646cfb48fc610705768ef",
+    "originalFile": "m4_-_fps_weapon_animations_pack_v.1.glb",
+    "providedBy": "user-upload"
+  },
+  "chamber_tpose": {
+    "kind": "arms",
+    "path": "models/chamber-viewmodel/model.glb",
+    "status": "imported",
+    "originalFile": "chamber_t-pose.glb",
+    "providedBy": "user-upload",
+    "sha256": "4e44e87ce64b4d3d66bc2430eaed0a976e74d0a52331ce4e23d504e77bc5c83f",
+    "source": null,
+    "license": null
+  },
+  "karambit": {
+    "kind": "weapon",
+    "path": "models/karambit-sport/model.glb",
+    "status": "imported",
+    "originalFile": "cs_go_karambit_with_sport_gloves.glb",
+    "providedBy": "user-upload",
+    "sha256": "b5b182d85ce59c9bbfa11d1d7597b7cc339f46bb0d0f42056c6756367217ca61",
+    "source": null,
+    "license": null,
+    "viewmodel": {
+      "position": [
+        -0.04,
+        -0.115,
+        -0.72
+      ],
+      "rotation": [
+        0.55,
+        3.14159265,
+        0
+      ],
+      "length": 1.05,
+      "autoOrient": false
+    },
+    "includesHands": true
+  },
+  "agent_sage": {
+    "kind": "arms",
+    "path": "models/agent-sage/model.glb",
+    "status": "imported",
+    "originalFile": "sage__valorant.glb",
+    "providedBy": "user-upload",
+    "sha256": "71f1100bf66e1cf4a6a77f4424014be28db05976af745f292b70c6815e839f23",
+    "source": null,
+    "license": null
+  },
+  "agent_reyna": {
+    "kind": "arms",
+    "path": "models/agent-reyna/model.glb",
+    "status": "imported",
+    "originalFile": "reyna__valorant.glb",
+    "providedBy": "user-upload",
+    "sha256": "e1a5809af65b690eb88c2d8fbf761c3d5864c8e7c84c19f0c0685a0be440db61",
+    "source": null,
+    "license": null
+  },
+  "agent_astra": {
+    "kind": "arms",
+    "path": "models/agent-astra/model.glb",
+    "status": "imported",
+    "originalFile": "astra__valorant.glb",
+    "providedBy": "user-upload",
+    "sha256": "6905e8fd29c2b92d03682f7318d03964448af0023c7ee73771233ef9f01e2dcd",
+    "source": null,
+    "license": null
+  }
+}

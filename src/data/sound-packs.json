@@ -1,0 +1,50 @@
+{
+  "vandal": {
+    "shot": "audio/vandal/showcase-shot.wav",
+    "reload": "audio/vandal/showcase-reload.wav",
+    "dry": null,
+    "bodyhit": "audio/vandal/showcase-bodyhit.wav",
+    "headshot": "audio/vandal/showcase-headshot.wav",
+    "kill1": "audio/vandal/showcase-kill1.wav",
+    "kill2": "audio/vandal/showcase-kill2.wav",
+    "kill3": "audio/vandal/showcase-kill3.wav",
+    "kill4": "audio/vandal/showcase-kill4.wav",
+    "kill5": "audio/vandal/showcase-kill5.wav"
+  },
+  "phantom": {
+    "shot": "audio/phantom/tap-natural-v2.wav",
+    "reload": null,
+    "dry": null
+  },
+  "ghost": {
+    "shot": "audio/ghost/shot.wav",
+    "reload": null,
+    "dry": null
+  },
+  "guardian": {
+    "shot": "audio/guardian/shot.wav",
+    "reload": null,
+    "dry": null
+  },
+  "sheriff": {
+    "shot": "audio/sheriff/shot.wav",
+    "reload": null,
+    "dry": null,
+    "kill1": "audio/sheriff/showcase-kill1.wav",
+    "kill2": "audio/sheriff/showcase-kill2.wav",
+    "kill3": "audio/sheriff/showcase-kill3.wav",
+    "kill4": "audio/sheriff/showcase-kill4.wav",
+    "kill5": "audio/sheriff/showcase-kill5.wav"
+  },
+  "shared": {
+    "kill1": "audio/kills/kill1.wav",
+    "kill2": "audio/kills/kill2.wav",
+    "kill3": "audio/kills/kill3.wav",
+    "kill4": "audio/kills/kill4.wav",
+    "kill5": "audio/kills/kill5.wav"
+  },
+  "npc-vandal": {
+    "shot1": "audio/npc-vandal/shot-1.wav",
+    "shot2": "audio/npc-vandal/shot-2.wav"
+  }
+}
