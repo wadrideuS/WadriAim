@@ -1,4 +1,6 @@
 import { read, save } from '../lib/storage.js';
+import { decorateVolumeField } from '../features/volume-field.js';
+import { createMusicControl } from './MusicControl.js';
 
 /**
  * Internet radio by genre via the free, keyless Radio Browser API
@@ -61,47 +63,19 @@ export class AmbientMusic {
           this.radio?.pause();
         }
       };
-    const button = document.createElement('button');
-    button.id = 'music-toggle';
-    button.className = 'music-toggle';
-    this.button = button;
-    this.updateLabel();
-    button.onclick = () => {
-      this.enabled = !this.enabled;
-      save('wa-music-enabled', this.enabled);
-      this.updateLabel();
-      if (this.enabled) this.start();
-      else {
-        this.context?.suspend();
-        this.radio.pause();
-      }
-    };
-    document.querySelector('header>div').prepend(button);
-    // genre picker + skip, next to the music button
     this.genre = radioGenres[read('wa-music-genre', 'synth')] ? read('wa-music-genre', 'synth') : 'synth';
-    const genre = document.createElement('select');
-    genre.className = 'music-genre';
-    genre.setAttribute('aria-label', 'Género de música');
-    for (const [id, g] of Object.entries(radioGenres)) {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = g.label;
-      genre.append(option);
-    }
-    genre.value = this.genre;
-    genre.onchange = () => this.setGenre(genre.value);
-    const skip = document.createElement('button');
-    skip.type = 'button';
-    skip.className = 'music-skip';
-    skip.textContent = '⏭';
-    skip.title = 'Otra emisora';
-    skip.setAttribute('aria-label', 'Otra emisora');
-    skip.onclick = () => this.nextStation();
-    this.nowPlaying = document.createElement('span');
-    this.nowPlaying.className = 'music-now';
-    this.genreSelect = genre;
-    this.skipButton = skip;
-    button.after(genre, skip, this.nowPlaying);
+    this.control = createMusicControl({
+      genres: radioGenres,
+      genre: this.genre,
+      onToggle: () => this.setEnabled(!this.enabled),
+      onGenre: (id) => this.setGenre(id),
+      onSkip: () => this.skipStation(),
+    });
+    this.button = this.control.button;
+    this.genreSelect = this.control.genreSelect;
+    this.updateLabel();
+    this.setStatus('');
+    document.querySelector('header>div').prepend(this.control.root);
     this.radio = new Audio();
     this.radio.preload = 'none';
     this.radio.onerror = () => {
@@ -110,7 +84,6 @@ export class AmbientMusic {
     this.stations = [];
     this.stationIndex = -1;
     const label = document.createElement('label');
-    label.textContent = 'Música de fondo';
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.min = '0';
@@ -122,7 +95,7 @@ export class AmbientMusic {
       save('wa-music-volume', this.volume);
       this.updateGain();
     };
-    label.append(slider);
+    decorateVolumeField(label, slider, 'music', 'Música de fondo');
     const form = document.getElementById('form');
     form.insertBefore(label, form.querySelector('button.primary'));
     this.volumeControl = label;
@@ -143,9 +116,28 @@ export class AmbientMusic {
     );
   }
   updateLabel() {
-    this.button.textContent = this.enabled ? '♫ Música' : '♫ Música OFF';
-    this.button.setAttribute('aria-pressed', String(this.enabled));
-    this.button.title = 'Activar o desactivar la música ambiental';
+    this.control.setPlaying(this.enabled);
+  }
+  setStatus(text, title = text) {
+    const label = text || (this.genre === 'synth' ? 'Ambiente original' : 'Radio en espera');
+    this.control.setStatus(label, title || label);
+    this.control.setSkipAvailable(this.genre !== 'synth');
+  }
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    save('wa-music-enabled', enabled);
+    this.updateLabel();
+    if (enabled) return this.start();
+    this.context?.suspend();
+    this.radio.pause();
+  }
+  skipStation() {
+    if (!this.enabled) {
+      this.enabled = true;
+      save('wa-music-enabled', true);
+      this.updateLabel();
+    }
+    return this.nextStation();
   }
   async setGenre(id) {
     this.genre = radioGenres[id] ? id : 'synth';
@@ -153,19 +145,22 @@ export class AmbientMusic {
     this.stations = [];
     this.stationIndex = -1;
     this.radio.pause();
-    this.nowPlaying.textContent = '';
+    this.setStatus('');
     if (this.enabled) await this.start();
   }
   async nextStation() {
     if (this.genre === 'synth') return;
+    const genre = this.genre;
     if (!this.stations.length) {
-      this.nowPlaying.textContent = 'Buscando emisoras…';
-      this.stations = (await findStations(radioGenres[this.genre].tags)).sort(() => Math.random() - 0.5);
+      this.setStatus('Buscando emisoras…');
+      const found = await findStations(radioGenres[genre].tags);
+      if (genre !== this.genre) return;
+      this.stations = found.sort(() => Math.random() - 0.5);
       this.stationIndex = -1;
       if (!this.stations.length) {
-        this.nowPlaying.textContent = 'Sin conexión con la radio · ambiental';
         this.genre = 'synth';
         this.genreSelect.value = 'synth';
+        this.setStatus('Sin conexión con la radio · ambiental');
         return this.start();
       }
     }
@@ -173,12 +168,12 @@ export class AmbientMusic {
     const station = this.stations[this.stationIndex];
     this.radio.src = station.url_resolved || station.url;
     this.updateGain();
-    this.nowPlaying.textContent = '♪ ' + station.name.trim().slice(0, 32);
-    this.nowPlaying.title = station.name;
+    this.setStatus('♪ ' + station.name.trim(), station.name.trim());
+    if (!this.enabled) return;
     try {
       await this.radio.play();
     } catch {
-      if (this.radio.paused && this.enabled) this.nowPlaying.textContent = 'Pulsa ⏭ para otra emisora';
+      if (this.radio.paused && this.enabled) this.setStatus('No suena · prueba «Otra emisora»');
     }
   }
   async start() {
@@ -209,6 +204,7 @@ export class AmbientMusic {
     this.owner = true;
     this.channel?.postMessage({ type: 'playing', id: this.id });
     await this.context.resume();
+    if (!this.enabled) return this.context.suspend();
     this.started = true;
     this.updateGain();
     this.schedule();
@@ -273,10 +269,7 @@ export class AmbientMusic {
     this.context?.close();
     this.radio.pause();
     this.radio.src = '';
-    this.genreSelect.remove();
-    this.skipButton.remove();
-    this.nowPlaying.remove();
-    this.button.remove();
+    this.control.dispose();
     this.volumeControl.remove();
   }
 }
