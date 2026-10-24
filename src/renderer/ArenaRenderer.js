@@ -4,6 +4,7 @@ import { dynamicWalls } from '../game/dynamic-arena.js';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ModelRepository } from './ModelRepository.js';
+import { VIEWMODEL_ADS_SHIFT, VIEWMODEL_REST_OFFSET } from './viewmodelRest.js';
 import { applyFinish } from '../data/finishes.js';
 import {
   OrbBursts,
@@ -26,6 +27,8 @@ import {
 
 /** Viewmodel field of view: wider = smaller gun and hands on screen. */
 const VIEWMODEL_FOV = 92;
+/** The karambit upload is framed inside its own container. */
+const KNIFE_REST_OFFSET = new THREE.Vector3();
 const VIEWMODEL_VERTICAL = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(VIEWMODEL_FOV) / 2) / (16 / 9)));
 /** Modes whose targets are floating heads rather than full agents. */
 const headOnlyModes = [0, 2, 6];
@@ -599,11 +602,12 @@ export class ArenaRenderer {
         ? Math.sin((session.reloadLeft / session.weapon.reload) * Math.PI) * 0.25
         : 0;
     const side = this.weaponSide === 'left' ? -1 : 1;
+    const rest = session.weaponId === 'karambit' ? KNIFE_REST_OFFSET : VIEWMODEL_REST_OFFSET;
     this.viewmodel.scale.x = side;
     this.viewmodel.position.set(
-      side * ((session.ads ? -0.1 : 0)+(session.weaponId==='karambit'?0:.015)),
-      (session.weaponId==='karambit'?0:-.035)+Math.sin(session.bob) * Math.min(0.003, session.moveSpeed * 0.001) - dip,
-      (session.weaponId==='karambit'?0:-.18)-session.recoil * 0.025,
+      side * ((session.ads ? VIEWMODEL_ADS_SHIFT : 0) + rest.x),
+      rest.y + Math.sin(session.bob) * Math.min(0.003, session.moveSpeed * 0.001) - dip,
+      rest.z - session.recoil * 0.025,
     );
     this.viewmodel.rotation.x = session.recoil * 0.04;
     this.viewmodel.rotation.z = side * session.recoil * 0.018;

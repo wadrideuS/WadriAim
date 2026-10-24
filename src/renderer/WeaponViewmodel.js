@@ -7,7 +7,7 @@ export function fitWeaponModel(object, entry, id) {
   container.add(oriented);
   const remove = [];
   object.traverse((node) => {
-    if (/GN_(AK|Dmr|Luger)_Magazine|Magazine_Extra/i.test(node.name) && !node.isBone)
+    if (/GN_(Dmr|Luger)_Magazine|Magazine_Extra/i.test(node.name) && !node.isBone)
       remove.push(node);
   });
   remove.forEach((node) => node.removeFromParent());
