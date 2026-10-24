@@ -17,6 +17,7 @@ import { read, save } from '../lib/storage.js';
 import { WeaponAudio } from '../audio/WeaponAudio.js';
 import { skinNames } from '../data/finishes.js';
 import { installArenaSettings } from '../features/arena-settings.js';
+import { decorateVolumeField } from '../features/volume-field.js';
 const $ = (id) => document.getElementById(id);
 
 /** Connects DOM, input, simulation and GPU renderer; owns their lifecycle. */
@@ -201,7 +202,6 @@ export class TrainingController {
     this.spawnRow.append(spawnLabel, spawnHere, spawnReset, this.spawnInfo);
     this.arenaSettings.root.querySelector('.settings-block:last-child').append(this.spawnRow);
     const label = document.createElement('label');
-    label.textContent = 'Volumen de los efectos';
     const volume = document.createElement('input');
     volume.type = 'range';
     volume.min = '0';
@@ -212,7 +212,7 @@ export class TrainingController {
       this.audio.setVolume(Number(volume.value) / 100);
       save('wa-volume', this.audio.volume);
     };
-    label.append(volume);
+    decorateVolumeField(label, volume, 'effects', 'Volumen de los efectos');
     $('form').insertBefore(label, $('form').querySelector('button.primary'));
     this.volumeControl = label;
   }
