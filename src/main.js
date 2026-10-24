@@ -13,6 +13,7 @@ import { configureStorage } from './lib/storage.js';
 
 import { initPalettes } from './features/palettes.js';
 import { installLivingBackground } from './features/living-background.js';
+import { installHeroArt } from './features/hero-art.js';
 
 async function start() {
   const background = installLivingBackground();
@@ -36,6 +37,7 @@ async function start() {
   const profileView = new URL(location.href).searchParams.get('view') === 'profile';
   const music = profileView ? null : new AmbientMusic();
   const app = profileView ? null : mountDashboard({ music, account });
+  const heroArt = profileView ? null : installHeroArt();
   if (profileView) initPalettes();
   panel = installAccountPanel(account, { page: profileView });
   if (profileView) await panel.open();
@@ -48,6 +50,7 @@ async function start() {
       queue?.dispose();
       panel.dispose();
       app?.dispose();
+      heroArt?.dispose();
       music?.dispose();
       background.dispose();
       presence.dispose();

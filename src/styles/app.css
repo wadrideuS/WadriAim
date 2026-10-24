@@ -146,86 +146,12 @@ p {
   font-size: 9px;
   color: var(--muted);
 }
-.hero-art {
-  height: 330px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid #465238;
-  border-radius: 9px;
-  background: radial-gradient(ellipse at 50% 40%, #34432b, #1b241b 75%);
-  background-image:
-    linear-gradient(#b9dd6e0b 1px, transparent 1px),
-    linear-gradient(90deg, #b9dd6e0b 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 40%, #34432b, #1b241b 75%);
-  background-size:
-    32px 32px,
-    32px 32px,
-    100% 100%;
-}
-.ring {
-  position: absolute;
-  border: 1px solid #a5cc5930;
-  border-radius: 50%;
-  width: 240px;
-  height: 240px;
-  left: calc(50% - 120px);
-  top: 20px;
-}
-.two {
-  transform: scale(1.5);
-}
 .ball,
 .orb {
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 28%, #edffc3, #b9e86a 35%, #577c29 90%);
   box-shadow: 0 12px 25px #0004;
-}
-.ball.a {
-  width: 48px;
-  height: 48px;
-  left: 20%;
-  top: 70px;
-}
-.ball.b {
-  width: 85px;
-  height: 85px;
-  left: 55%;
-  top: 140px;
-}
-.ball.c {
-  width: 28px;
-  height: 28px;
-  right: 13%;
-  top: 53px;
-}
-.cross {
-  position: absolute;
-  color: #eaffd9;
-  left: 47%;
-  top: 88px;
-  font-size: 44px;
-}
-.hero-art label {
-  position: absolute;
-  bottom: 76px;
-  left: 30px;
-  color: var(--lime);
-  font-size: 8px;
-  letter-spacing: 2px;
-}
-.hero-art small {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding: 18px;
-  border-top: 1px solid #a8c87e25;
-  color: #bac8af;
-  font-size: 8px;
-  letter-spacing: 1px;
-}
-.hero-art small span {
-  float: right;
 }
 .section-head {
   display: flex;
@@ -614,16 +540,6 @@ body.light {
 .primary {
   color: #fff;
 }
-.hero-art {
-  border-color: #763250;
-  background-image:
-    linear-gradient(#f97cb214 1px, transparent 1px),
-    linear-gradient(90deg, #f97cb214 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 40%, #52253f, #201525 75%);
-}
-.ring {
-  border-color: #ff67ab40;
-}
 .ball,
 .orb {
   background: radial-gradient(circle at 35% 28%, #ffd6e8, #ff5d9b 35%, #9a194f 90%);
@@ -648,10 +564,6 @@ body.light {
 }
 .card:hover {
   border-color: #e65b97;
-}
-.hero-art small {
-  color: #dab7ce;
-  border-color: #ff8ac438;
 }
 .preview {
   background: #2c1c2a;
@@ -690,9 +602,6 @@ body.light .info h3 span {
 }
 #settings h2 {
   font-size: 25px;
-}
-.hero-art label {
-  color: #ff91be;
 }
 #overlay {
   overflow-y: auto;
@@ -1020,10 +929,6 @@ body[data-palette] nav .active {
 body[data-palette] .thumb {
   background-color: var(--palette-panel) !important;
 }
-body[data-palette] .hero-art {
-  background: radial-gradient(ellipse at 50% 40%, var(--palette-panel), var(--palette-bg));
-  border-color: var(--lime);
-}
 body[data-palette] .card:hover {
   border-color: var(--lime);
 }
@@ -1112,7 +1017,6 @@ body[data-palette] .fullscreen-entry {
 body[data-palette] .fullscreen-entry:hover {
   background: color-mix(in srgb, var(--lime), white 88%);
 }
-body[data-palette] .hero-art small,
 body[data-palette] .tag,
 body[data-palette] .meta b {
   color: var(--lime);
@@ -1142,10 +1046,6 @@ body[data-palette] .mira-card.selected {
   background: color-mix(in srgb, var(--lime), transparent 91%);
   box-shadow: none;
 }
-body[data-palette] .ring {
-  border-color: color-mix(in srgb, var(--lime), transparent 78%);
-}
-
 .thumb.mode-thumb { background-color: #101116 !important; background-image: radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--palette-accent, #ff408e) 13%, transparent), transparent 75%); }
 .thumb.mode-thumb::after { display: none; }
 .mode-illustration { display: block; width: 100%; height: 100%; color: var(--palette-accent, #ff408e); transition: transform .5s ease; }
@@ -1214,3 +1114,250 @@ body[data-palette] .ring {
 .team-loading {font-size:12px;color:#8f98a6;}
 @media(max-width:900px){.ranking-layout{grid-template-columns:1fr;}.ranking-table .acc,.ranking-table th:last-child{display:none;}}
 @media(max-width:520px){.ranking-table .team-cell,.ranking-table th:nth-child(3){display:none;}}
+
+/* Hero card: a window into the arena. hero-art.js swaps the CSS balls for the WebGL orbs
+   and drives --hero-px / --hero-py (pointer parallax, -1..1). */
+.hero-art {
+  --hero-accent: var(--lime);
+  --hero-footer: 52px;
+  --hero-center-y: calc((100% - var(--hero-footer)) / 2);
+  --hero-px: 0;
+  --hero-py: 0;
+  height: 330px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--hero-accent), transparent 40%);
+  border-radius: 10px;
+  background:
+    radial-gradient(
+      ellipse 60% 55% at 50% 42%,
+      color-mix(in srgb, var(--hero-accent), transparent 86%),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 47%,
+      color-mix(in srgb, var(--hero-accent), transparent 80%) 48.2%,
+      transparent 49.5%
+    ),
+    linear-gradient(180deg, color-mix(in srgb, var(--panel), black 30%), var(--bg) 85%);
+  box-shadow:
+    inset 0 1px 0 #ffffff12,
+    0 30px 70px -30px color-mix(in srgb, var(--hero-accent), transparent 72%),
+    0 24px 60px -36px #000;
+}
+.hero-art::before {
+  content: '';
+  position: absolute;
+  inset: 48% -45% -40%;
+  z-index: -1;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--hero-accent), transparent 80%) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--hero-accent), transparent 80%) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: calc(50% + var(--hero-px) * -14px) 0;
+  transform: perspective(320px) rotateX(64deg);
+  transform-origin: 50% 0;
+  mask-image: linear-gradient(transparent, #000 30%, #000 60%, transparent 92%);
+  pointer-events: none;
+}
+.hero-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: radial-gradient(
+    ellipse 80% 75% at 50% 42%,
+    transparent 55%,
+    color-mix(in srgb, var(--bg), transparent 25%) 100%
+  );
+  pointer-events: none;
+}
+.hero-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.hero-art.is-live .hero-orbs {
+  opacity: 1;
+}
+.hero-art .ball {
+  z-index: 1;
+  transition: opacity 0.4s ease;
+}
+.hero-art.is-live .ball {
+  opacity: 0;
+}
+.hero-art .ball.a {
+  width: 48px;
+  height: 48px;
+  left: 20%;
+  top: 70px;
+}
+.hero-art .ball.b {
+  width: 85px;
+  height: 85px;
+  left: 55%;
+  top: 140px;
+}
+.hero-art .ball.c {
+  width: 28px;
+  height: 28px;
+  right: 13%;
+  top: 53px;
+}
+.hero-art .ring {
+  --ring-size: 236px;
+  position: absolute;
+  z-index: 0;
+  left: calc(50% - var(--ring-size) / 2);
+  top: calc(var(--hero-center-y) - var(--ring-size) / 2);
+  width: var(--ring-size);
+  height: var(--ring-size);
+  border: 1.5px solid color-mix(in srgb, var(--hero-accent), transparent 58%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--hero-accent), transparent 86%),
+    inset 0 0 22px color-mix(in srgb, var(--hero-accent), transparent 90%);
+  transform: translate(calc(var(--hero-px) * 7px), calc(var(--hero-py) * 5px));
+  pointer-events: none;
+}
+.hero-art .ring::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 50%;
+  background: conic-gradient(
+    transparent 0 80%,
+    color-mix(in srgb, var(--hero-accent), transparent 15%) 97%,
+    transparent
+  );
+  mask-image: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+  animation: hero-sweep 7s linear infinite;
+}
+.hero-art .ring.two {
+  --ring-size: 372px;
+  border: 1px solid color-mix(in srgb, var(--hero-accent), transparent 82%);
+  box-shadow: none;
+  transform: translate(calc(var(--hero-px) * 3px), calc(var(--hero-py) * 2px));
+}
+.hero-art .ring.two::after {
+  inset: 5px;
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--hero-accent), transparent 60%) 0 0.5deg,
+    transparent 0.5deg 10deg
+  );
+  mask-image: radial-gradient(closest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  animation: none;
+}
+@keyframes hero-sweep {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.hero-art .cross {
+  --cross-size: 34px;
+  --cross-arm: 11px;
+  --cross-color: #f1ffe2;
+  position: absolute;
+  z-index: 4;
+  left: calc(50% - var(--cross-size) / 2);
+  top: calc(var(--hero-center-y) - var(--cross-size) / 2);
+  left: round(calc(50% - var(--cross-size) / 2), 1px);
+  top: round(calc(var(--hero-center-y) - var(--cross-size) / 2), 1px);
+  width: var(--cross-size);
+  height: var(--cross-size);
+  background:
+    linear-gradient(var(--cross-color) 0 0) 50% 0 / 2px var(--cross-arm),
+    linear-gradient(var(--cross-color) 0 0) 50% 100% / 2px var(--cross-arm),
+    linear-gradient(var(--cross-color) 0 0) 0 50% / var(--cross-arm) 2px,
+    linear-gradient(var(--cross-color) 0 0) 100% 50% / var(--cross-arm) 2px,
+    linear-gradient(var(--cross-color) 0 0) 50% 50% / 2px 2px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 1px #000d)
+    drop-shadow(0 0 7px color-mix(in srgb, var(--hero-accent), transparent 35%));
+  pointer-events: none;
+}
+.hero-art .hitmarker {
+  position: absolute;
+  inset: 1px;
+  opacity: 0;
+  transform: rotate(45deg);
+  background:
+    linear-gradient(#fff 0 0) 50% 0 / 2px 8px,
+    linear-gradient(#fff 0 0) 50% 100% / 2px 8px,
+    linear-gradient(#fff 0 0) 0 50% / 8px 2px,
+    linear-gradient(#fff 0 0) 100% 50% / 8px 2px;
+  background-repeat: no-repeat;
+}
+.hero-art .hero-hud {
+  position: absolute;
+  z-index: 4;
+  top: 18px;
+  left: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--hero-accent), transparent 72%);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--bg), transparent 35%);
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+.hero-art .hero-hud[hidden] {
+  display: none;
+}
+.hero-art .hero-hud b {
+  color: var(--hero-accent);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+.hero-art .hero-caption {
+  position: absolute;
+  z-index: 4;
+  bottom: calc(var(--hero-footer) + 22px);
+  left: 30px;
+  color: color-mix(in srgb, var(--hero-accent), var(--text) 30%);
+  font-size: 9px;
+  letter-spacing: 2.4px;
+  text-shadow: 0 1px 10px var(--bg);
+}
+.hero-art small {
+  position: absolute;
+  z-index: 4;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: var(--hero-footer);
+  padding: 0 24px;
+  border-top: 1px solid color-mix(in srgb, var(--hero-accent), transparent 72%);
+  background: color-mix(in srgb, var(--bg), transparent 30%);
+  color: var(--hero-accent);
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+.hero-art small span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-art .ring::after {
+    animation: none;
+  }
+  .hero-orbs,
+  .hero-art .ball {
+    transition: none;
+  }
+}
