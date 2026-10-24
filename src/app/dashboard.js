@@ -4,12 +4,14 @@ import { read, save } from '../lib/storage.js';
 import { exercises } from '../data/exercises.js';
 import { cross, parseCode } from '../features/crosshair-code.js';
 import { initCrosshairLibrary } from '../features/crosshair-library.js';
+import { DEFAULT_CROSSHAIR_CODE } from '../features/crosshair-collection.js';
 import { TrainingController } from '../game/TrainingController.js';
-import { installLeaderboard } from '../features/leaderboard.js';
+import { installProgressPage } from '../pages/progress.js';
+import { installRankingPage } from '../pages/ranking.js';
+import { installCrosshairPage } from '../pages/crosshairs.js';
 export function mountDashboard({ music, account = null } = {}) {
-  const $ = (id) => document.getElementById(id),
-    defaultCode = '0;s;1;P;c;5;h;1;d;0;0b;1;0t;1;0l;4;0v;4;0o;2;0a;1;0f;0;1b;0';
-  let profile = read('wa-profile', { name: '', sens: 0.35, dpi: 800, code: defaultCode }),
+  const $ = (id) => document.getElementById(id);
+  let profile = read('wa-profile', { name: '', sens: 0.35, dpi: 800, code: DEFAULT_CROSSHAIR_CODE }),
     history = read('wa-history', []);
   document.body.classList.remove('light');
   save('wa-theme', 'dark');
@@ -107,54 +109,58 @@ export function mountDashboard({ music, account = null } = {}) {
     onboarding = false;
     updateProfile();
     $('settings').close();
+    refreshView();
   };
   function updateProfile() {
     $('profile').textContent = (profile.name || 'W') + ' · Mi perfil ↗';
   }
   updateProfile();
-  const leaderboard = installLeaderboard($('ranking'), { account });
-  const navigate = (view) => {
-    $('gallery').hidden = view !== 'home';
-    $('stats').hidden = view !== 'progress';
-    $('ranking').hidden = view !== 'ranking';
-    for (const [id, name] of [['home', 'home'], ['progress', 'progress'], ['rankingnav', 'ranking']])
-      $(id).classList.toggle('active', view === name);
-    if (view === 'ranking') {
-      leaderboard.show();
-      $('ranking').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-  $('rankingnav').onclick = () => navigate('ranking');
-  function showStats() {
-    navigate('progress');
-    $('gallery').hidden = true;
-    $('stats').hidden = false;
-    $('home').classList.remove('active');
-    $('progress').classList.add('active');
-    $('history').innerHTML = '';
-    if (!history.length) {
-      $('history').innerHTML =
-        '<div class="empty"><h3>Tu primera sesión te espera.</h3><p>Completa un ejercicio para ver tus resultados aquí.</p></div>';
-      return;
-    }
-    history
-      .slice()
-      .reverse()
-      .forEach((h) => {
-        const row = document.createElement('div');
-        row.className = 'historyrow';
-        row.textContent = `${h.name} · ${new Date(h.date).toLocaleDateString('es')} — ${h.score ? h.score + ' puntos · ' : ''}${h.hits} aciertos · ${h.accuracy}% precisión`;
-        $('history').append(row);
-      });
+  function patchProfile(patch) {
+    profile = { ...profile, ...patch };
+    save('wa-profile', profile);
+    updateProfile();
   }
-  $('progress').onclick = showStats;
-  $('home').onclick = () => {
-    navigate('home');
-    $('gallery').hidden = false;
-    $('stats').hidden = true;
-    $('home').classList.add('active');
-    $('progress').classList.remove('active');
+  const pages = {
+    home: { section: 'gallery', nav: 'home' },
+    progress: {
+      section: 'stats',
+      nav: 'progress',
+      page: installProgressPage($('stats'), {
+        getHistory: () => history,
+        onTrain: () => {
+          navigate('home');
+          $('gallery').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        },
+      }),
+    },
+    ranking: { section: 'ranking', nav: 'rankingnav', page: installRankingPage($('ranking'), { account }) },
+    crosshairs: {
+      section: 'crosshairs',
+      nav: 'crosshairsnav',
+      page: installCrosshairPage($('crosshairs'), {
+        getCode: () => profile.code,
+        applyCode: (code) => patchProfile({ code }),
+      }),
+    },
   };
+  let view = 'home';
+  document.body.dataset.view = view;
+  function navigate(next) {
+    view = next;
+    document.body.dataset.view = next;
+    for (const [name, { section, nav }] of Object.entries(pages)) {
+      $(section).hidden = name !== next;
+      $(nav).classList.toggle('active', name === next);
+      if (name === next) $(nav).setAttribute('aria-current', 'page');
+      else $(nav).removeAttribute('aria-current');
+    }
+    pages[next].page?.show();
+    scrollTo({ top: 0 });
+  }
+  function refreshView() {
+    pages[view].page?.show();
+  }
+  for (const [name, { nav }] of Object.entries(pages)) $(nav).onclick = () => navigate(name);
 
   $('settings').addEventListener('cancel', (e) => {
     if (onboarding) e.preventDefault();
@@ -163,15 +169,14 @@ export function mountDashboard({ music, account = null } = {}) {
   const game = new TrainingController({
     music,
     getProfile: () => profile,
-    updateProfile: (patch) => {
-      profile = { ...profile, ...patch };
-      save('wa-profile', profile);
-      updateProfile();
-    },
+    updateProfile: patchProfile,
     onComplete: (record) => {
       history = [...history, record].slice(-100);
       save('wa-history', history);
+      if (view === 'progress') refreshView();
     },
+    onShowTraining: () => navigate('home'),
+    onShowProgress: () => navigate('progress'),
   });
   $('quick').onclick = () => openGame(0);
   function openGame(i) {
@@ -181,7 +186,12 @@ export function mountDashboard({ music, account = null } = {}) {
     }
     game.open(i);
   }
-  settings = initCrosshairLibrary({ settings, preview, defaultCode });
+  settings = initCrosshairLibrary({ settings, preview });
   if (onboarding) settings();
-  return { dispose: () => game.dispose() };
+  return {
+    dispose: () => {
+      game.dispose();
+      pages.ranking.page.dispose();
+    },
+  };
 }

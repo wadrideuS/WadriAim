@@ -1,0 +1,297 @@
+.progress-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+.kpi dt {
+  font:
+    600 10px 'Space Grotesk',
+    sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kpi dd {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+.kpi strong {
+  font:
+    700 34px/1 'Space Grotesk',
+    sans-serif;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.kpi:nth-child(2) strong {
+  color: var(--lime);
+}
+.kpi dd span {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.progress-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.progress-panel {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+.progress-panel h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+}
+.panel-note {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.progress-chart {
+  margin: 0;
+}
+.progress-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.progress-chart .grid {
+  stroke: var(--line);
+}
+.progress-chart .axis {
+  fill: var(--muted);
+  font:
+    11px 'DM Sans',
+    sans-serif;
+}
+.progress-chart .average {
+  stroke: var(--muted);
+  stroke-dasharray: 4 5;
+}
+.progress-chart .line {
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.progress-chart .fill-top {
+  stop-color: var(--lime);
+  stop-opacity: 0.3;
+}
+.progress-chart .fill-bottom {
+  stop-color: var(--lime);
+  stop-opacity: 0;
+}
+.progress-chart .dot {
+  fill: var(--bg);
+  stroke: var(--lime);
+  stroke-width: 2;
+}
+.progress-chart .dot:last-of-type {
+  fill: var(--lime);
+}
+.chart-legend {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chart-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-top: 2px solid var(--lime);
+}
+.chart-legend .legend-average::before {
+  border-top: 2px dashed var(--muted);
+}
+.trend-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.trend-facts dt {
+  font-size: 12px;
+  color: var(--muted);
+}
+.trend-facts dd {
+  margin: 4px 0 0;
+  font:
+    700 22px 'Space Grotesk',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.trend-facts .is-up dd {
+  color: var(--lime);
+}
+.mode-list {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mode-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.mode-row:last-child {
+  border-bottom: 0;
+}
+.mode-name strong {
+  display: block;
+  font:
+    600 14px 'Space Grotesk',
+    sans-serif;
+  color: var(--text);
+}
+.mode-name span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mode-accuracy {
+  align-self: center;
+  font:
+    700 16px 'Space Grotesk',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.mode-bar {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+.mode-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--accuracy);
+  border-radius: inherit;
+  background: var(--lime);
+}
+.progress-history {
+  overflow-x: auto;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.history-table :is(th, td) {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+.history-table thead th {
+  font:
+    600 10px 'Space Grotesk',
+    sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.history-table tbody th {
+  font-weight: 600;
+  color: var(--text);
+}
+.history-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.history-table tbody tr:hover > * {
+  background: color-mix(in srgb, var(--lime) 5%, transparent);
+}
+.history-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.history-table .when {
+  color: var(--muted);
+}
+.progress-empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 64px 24px;
+  text-align: center;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    color-mix(in srgb, var(--lime) 12%, transparent),
+    transparent 70%
+  );
+}
+.empty-mark {
+  font-size: 40px;
+  line-height: 1;
+  color: var(--lime);
+}
+.progress-empty h3 {
+  margin: 12px 0 0;
+  font-size: 22px;
+}
+.progress-empty p {
+  max-width: 46ch;
+  margin: 0 0 16px;
+}
+@media (max-width: 1100px) {
+  .progress-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .progress-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpi strong {
+    font-size: 26px;
+  }
+  .progress-panel {
+    padding: 16px;
+  }
+}

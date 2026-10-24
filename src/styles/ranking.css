@@ -1,0 +1,306 @@
+.ranking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.3fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.ranking-board,
+.team-board {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+.ranking-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.ranking-modes button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.ranking-modes button:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--lime) 45%, var(--line));
+}
+.ranking-modes button[aria-selected='true'] {
+  border-color: transparent;
+  background: var(--lime);
+  color: #1a0f16;
+  font-weight: 600;
+}
+.ranking-status {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+.ranking-status:empty {
+  display: none;
+}
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.ranking-table :is(th, td) {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+.ranking-table thead th {
+  font:
+    600 10px 'Space Grotesk',
+    sans-serif;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ranking-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ranking-table .pos {
+  width: 52px;
+}
+.pos-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font:
+    700 13px 'Space Grotesk',
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.podium-1 .pos-chip {
+  background: #f2c64b;
+  color: #2a1d00;
+}
+.podium-2 .pos-chip {
+  background: #c9d1da;
+  color: #1c2229;
+}
+.podium-3 .pos-chip {
+  background: #cf8a52;
+  color: #2a1406;
+}
+.ranking-table tbody .player {
+  font-weight: 600;
+  color: var(--text);
+}
+.ranking-table .podium-1 .player {
+  font-size: 15px;
+}
+.ranking-table .score {
+  font:
+    700 15px 'Space Grotesk',
+    sans-serif;
+  color: var(--text);
+}
+.me-tag {
+  margin-left: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: #1a0f16;
+  font:
+    700 9px 'Space Grotesk',
+    sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+.ranking-table tr.is-me > * {
+  background: color-mix(in srgb, var(--lime) 12%, transparent);
+}
+.ranking-table tr.is-me > :first-child {
+  box-shadow: inset 3px 0 0 var(--lime);
+}
+.ranking-pinned tr > * {
+  border-top: 2px dashed var(--line);
+}
+.ranking-table.is-loading tbody td {
+  position: relative;
+  height: 48px;
+}
+.skeleton td::before {
+  content: '';
+  position: absolute;
+  inset: 16px 10px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--line),
+    color-mix(in srgb, var(--line) 50%, var(--muted)),
+    var(--line)
+  );
+  background-size: 200% 100%;
+  animation: ranking-shimmer 1.2s linear infinite;
+}
+@keyframes ranking-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.ranking-notice {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 28px 24px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+}
+.ranking-notice strong {
+  font:
+    600 17px 'Space Grotesk',
+    sans-serif;
+  color: var(--text);
+}
+.ranking-notice p {
+  max-width: 60ch;
+  margin: 0;
+  line-height: 1.6;
+}
+.ranking-notice .secondary {
+  margin-top: 8px;
+}
+.ranking-guest {
+  margin: 16px 0 0;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--lime) 28%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lime) 8%, transparent);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.ranking-hint {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--rank) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rank) 12%, transparent);
+  color: var(--rank);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rank-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  background: var(--rank);
+}
+/* `.mini` is also a gallery-thumbnail class with absolute positioning; reset it here. */
+.team-badge.mini {
+  position: static;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  font-size: 8px;
+}
+.team-badge.mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.team-board h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+.team-note {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.team-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.team-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  overflow: hidden;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.team-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: var(--share);
+  background: color-mix(in srgb, var(--team-color) 22%, transparent);
+}
+.team-row > * {
+  position: relative;
+  z-index: 1;
+}
+.team-row .pos {
+  width: 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.team-row strong {
+  flex: 1;
+  font-weight: 600;
+}
+.team-row .points {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.team-row.is-me {
+  outline: 1px solid var(--team-color);
+}
+.team-loading {
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton td::before {
+    animation: none;
+  }
+}
+@media (max-width: 900px) {
+  .ranking-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .ranking-board,
+  .team-board {
+    padding: 16px;
+  }
+  .ranking-table .rank-cell,
+  .ranking-table th:nth-child(4),
+  .ranking-table .team-cell,
+  .ranking-table th:nth-child(3) {
+    display: none;
+  }
+}

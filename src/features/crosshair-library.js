@@ -99,10 +99,6 @@ export function initCrosshairLibrary({ settings, preview, defaultCode }) {
   };
   $('profile').onclick = settings;
   $('configure').onclick = settings;
-  $('crosshairsnav').onclick = () => {
-    settings();
-    $('crosshair-library').scrollIntoView({ block: 'start', behavior: 'smooth' });
-  };
   $('code').addEventListener('input', renderMiras);
   if ($('settings').open) renderMiras();
 
