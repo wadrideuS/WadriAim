@@ -486,8 +486,6 @@ body.access-open {
   max-height: calc(100dvh - 40px);
   padding: clamp(24px, 4vw, 42px);
   background: color-mix(in srgb, var(--bg) 95%, transparent);
-  scrollbar-width: thin;
-  scrollbar-color: var(--line) transparent;
 }
 .access-dialog [hidden] {
   display: none !important;
@@ -678,7 +676,6 @@ body.access-open {
   background: var(--bg);
   color: var(--text);
   box-shadow: 0 30px 100px #0009;
-  scrollbar-width: thin;
 }
 .team-picker::backdrop {
   background: #06070a80;
@@ -746,7 +743,6 @@ body.access-open {
   max-height: 43dvh;
   overflow: auto;
   padding: 2px 6px 3px 2px;
-  scrollbar-width: thin;
 }
 .team-choice {
   display: flex;

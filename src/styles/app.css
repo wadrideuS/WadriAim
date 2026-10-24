@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import './scrollbars.css';
 :root {
   --bg: #101210;
   --panel: #191d19;
@@ -871,6 +872,7 @@ html:fullscreen body {
   gap: 9px;
   max-height: 310px;
   overflow: auto;
+  scrollbar-gutter: stable;
   padding: 2px;
 }
 .mira-card {
