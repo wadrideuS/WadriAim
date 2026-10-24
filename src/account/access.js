@@ -33,6 +33,27 @@ function button(text, handler, className = 'secondary') {
   b.onclick = handler;
   return b;
 }
+const FIELD_ICON = {
+  user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.2 19.4c1.5-3 3.9-4.5 6.8-4.5s5.3 1.5 6.8 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 7.5 12 13l8-5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.2 10.5V8.2a3.8 3.8 0 0 1 7.6 0v2.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  eye: '<svg class="icon-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.8 12S6.2 6.8 12 6.8 21.2 12 21.2 12 17.8 17.2 12 17.2 2.8 12 2.8 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+  eyeOff:
+    '<svg class="icon-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5 19.5 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9.2 7.2A8 8 0 0 1 12 6.8C17.8 6.8 21.2 12 21.2 12a16 16 0 0 1-3.1 3.4M14.4 14.6A2.6 2.6 0 0 1 9.6 12M6.2 8.4A16 16 0 0 0 2.8 12S6.2 17.2 12 17.2a9 9 0 0 0 2.6-.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  guest:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.2 19.4c1.5-3 3.9-4.5 6.8-4.5s5.3 1.5 6.8 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+};
+const SOCIAL_ICON = {
+  google:
+    '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.7-6.7 7.1l.1.1 6.3 5.3C36.9 41.6 44 36 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>',
+  discord:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#5865F2" d="M19.27 5.33A16.4 16.4 0 0 0 15.4 4l-.4.83a14.7 14.7 0 0 1 3.65 1.48 15.2 15.2 0 0 0-13.3 0A12.6 12.6 0 0 1 9 4.83L8.6 4a16.4 16.4 0 0 0-3.87 1.33C1.96 9.02 1.3 12.55 1.55 16.04A16.6 16.6 0 0 0 6.7 18.7l.64-1.07a10.7 10.7 0 0 1-1.68-.82l.42-.33a12.2 12.2 0 0 0 10.84 0l.42.33c-.53.33-1.1.61-1.68.82l.64 1.07a16.6 16.6 0 0 0 5.15-2.66c.48-4.06-.82-7.56-2.58-10.71ZM8.7 14.1c-.98 0-1.78-.92-1.78-2.04s.78-2.04 1.78-2.04 1.8.92 1.78 2.04c0 1.12-.78 2.04-1.78 2.04Zm6.6 0c-.98 0-1.78-.92-1.78-2.04s.78-2.04 1.78-2.04 1.8.92 1.78 2.04c0 1.12-.8 2.04-1.78 2.04Z"/></svg>',
+  facebook:
+    '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M13.5 21v-7.2h2.4l.4-2.8h-2.8V9.2c0-.8.2-1.4 1.4-1.4H16.4V5.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 4v2h-2.6v2.8H10.3V21h3.2Z"/></svg>',
+};
+function accessField(blockId, inputId, label, icon, attrs) {
+  return `<div class="field-block" id="${blockId}"><label for="${inputId}">${label}</label><span class="field">${FIELD_ICON[icon]}<input id="${inputId}" ${attrs}></span></div>`;
+}
 const GUEST_FLAG = 'wadriaim-guest-tab';
 function guestRemembered() {
   try {
@@ -63,7 +84,25 @@ export async function bootAccess() {
   const dialog = el('dialog', 'access-dialog');
   dialog.setAttribute('aria-labelledby', 'access-title');
   dialog.innerHTML =
-    '<div class="access-brand">⌖ WadriAim</div><p class="eyebrow">TU ZONA. TU PERFIL. TU RITMO.</p><h1 id="access-title">Entra en tu zona.</h1><p class="access-intro">Guarda tu progreso, prepara tu equipo y encuentra a tus amigos.</p><div class="access-tabs"><button type="button" data-mode="login">Iniciar sesión</button><button type="button" data-mode="register">Crear cuenta</button></div><form id="access-form"><label id="username-label">Usuario único<input id="access-username" autocomplete="username" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" placeholder="tu_usuario"></label><label id="email-label">Correo electrónico<input id="access-email" type="email" autocomplete="email" required></label><label id="password-label">Contraseña<input id="access-password" type="password" autocomplete="current-password" minlength="8" required></label><button class="primary" id="access-submit">Iniciar sesión</button></form><p class="access-message" id="access-message" role="status" aria-live="polite"></p><button type="button" class="text-action" id="forgot-password">Olvidé mi contraseña</button><div class="access-divider"><span>o calienta sin cuenta</span></div><button type="button" class="guest-entry" id="guest-entry">Entrar como invitado ↗</button><p class="guest-note">La sesión de invitado dura mientras tengas abierta la pestaña: al cerrarla se restablece.</p>';
+    '<div class="access-brand">⌖ WadriAim</div><p class="eyebrow">TU ZONA. TU PERFIL. TU RITMO.</p><h1 id="access-title">Entra en tu zona.</h1><p class="access-intro">Guarda tu progreso, prepara tu equipo y encuentra a tus amigos.</p><div class="access-tabs" role="tablist" aria-label="Tipo de acceso"><button type="button" role="tab" data-mode="login" aria-selected="true">Iniciar sesión</button><button type="button" role="tab" data-mode="register" aria-selected="false">Crear cuenta</button></div><form id="access-form">' +
+    accessField(
+      'username-label',
+      'access-username',
+      'Usuario único',
+      'user',
+      'autocomplete="username" minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]{3,20}" placeholder="tu_usuario"',
+    ) +
+    accessField(
+      'email-label',
+      'access-email',
+      'Correo electrónico',
+      'mail',
+      'type="email" autocomplete="email" required',
+    ) +
+    `<div class="field-block" id="password-label"><label for="access-password">Contraseña</label><span class="field">${FIELD_ICON.lock}<input id="access-password" type="password" autocomplete="current-password" minlength="8" required><button type="button" class="field-reveal" id="password-reveal" aria-label="Mostrar contraseña" aria-pressed="false">${FIELD_ICON.eye}${FIELD_ICON.eyeOff}</button></span></div>` +
+    '<button type="button" class="text-action" id="forgot-password">Olvidé mi contraseña</button><button class="primary" id="access-submit">Iniciar sesión</button></form><p class="access-message" id="access-message" role="status" aria-live="polite"></p><div class="access-divider"><span>o calienta sin cuenta</span></div><button type="button" class="guest-entry" id="guest-entry">' +
+    FIELD_ICON.guest +
+    '<span>Entrar como invitado</span></button><p class="guest-note">La sesión de invitado dura mientras tengas abierta la pestaña: al cerrarla se restablece.</p>';
   const confirmation = el('section', 'access-confirmation');
   confirmation.hidden = true;
   confirmation.innerHTML =
@@ -77,11 +116,8 @@ export async function bootAccess() {
     ['discord', 'Discord'],
     ['facebook', 'Facebook'],
   ]) {
-    const option = button(
-      'Continuar con ' + name,
-      () => run(() => signInSocial(provider)),
-      'social-login',
-    );
+    const option = button('', () => run(() => signInSocial(provider)), 'social-login');
+    option.innerHTML = SOCIAL_ICON[provider] + '<span>Continuar con ' + name + '</span>';
     option.dataset.provider = provider;
     option.disabled = true;
     option.title = 'No disponible todavía';
@@ -131,15 +167,35 @@ export async function bootAccess() {
           : mode === 'recover'
             ? 'Guardar nueva contraseña'
             : 'Iniciar sesión';
-    dialog
-      .querySelectorAll('[data-mode]')
-      .forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
+    $('forgot-password').hidden = mode === 'request-recovery' || mode === 'recover';
+    $('access-password').type = 'password';
+    $('password-reveal').setAttribute('aria-pressed', 'false');
+    $('password-reveal').setAttribute('aria-label', 'Mostrar contraseña');
+    dialog.querySelectorAll('[data-mode]').forEach((tab) => {
+      const selected = tab.dataset.mode === mode;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+    });
     $('access-message').textContent = '';
+    if (dialog.open) {
+      ($('username-label').hidden ? $('access-password') : $('access-username')).focus();
+    }
   };
   setMode('login');
   dialog
     .querySelectorAll('[data-mode]')
     .forEach((b) => (b.onclick = () => setMode(b.dataset.mode)));
+  $('password-reveal').onclick = () => {
+    const input = $('access-password');
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    $('password-reveal').setAttribute('aria-pressed', String(!showing));
+    $('password-reveal').setAttribute(
+      'aria-label',
+      showing ? 'Mostrar contraseña' : 'Ocultar contraseña',
+    );
+    input.focus();
+  };
   dialog.addEventListener('cancel', (e) => e.preventDefault());
   let resolveAccess;
   const result = new Promise((resolve) => (resolveAccess = resolve));
@@ -268,6 +324,7 @@ export async function bootAccess() {
     }
   }
   dialog.showModal();
+  $('access-username').focus();
   if (!supabase) {
     $('access-message').textContent =
       'Las cuentas estarán disponibles al conectar el servidor. Ya puedes entrenar como invitado.';
