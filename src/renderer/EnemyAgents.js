@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
+import { buildRig, findBone, worldOf } from './agent-rig.js';
 
 /**
  * Full-body agent models for the arena bots.
@@ -80,16 +81,6 @@ function createOutlineMaterial(angle) {
   return outline;
 }
 const outlinePasses = Array.from({ length: 8 }, (_, i) => createOutlineMaterial((i * Math.PI) / 4));
-
-const findBone = (root, name) => {
-  let found = null;
-  const pattern = new RegExp('^' + name + '_\\d+$');
-  root.traverse((node) => {
-    if (!found && node.isBone && pattern.test(node.name)) found = node;
-  });
-  return found;
-};
-const worldOf = (node) => node.getWorldPosition(new THREE.Vector3());
 
 /**
  * The ripped agent meshes weight the fingers ~50 % to the skirt bone (they
@@ -267,89 +258,6 @@ function buildHitboxes(root, group) {
 }
 
 /**
- * Procedural legs: side-steps while strafing, strides when moving forward and a
- * proper crouch (hips + knees bend, feet stay on the floor).
- */
-function buildRig(root, group) {
-  group.updateMatrixWorld(true);
-  const bones = {};
-  for (const side of ['L', 'R'])
-    for (const name of ['Hip', 'Knee', 'Foot']) bones[side + name] = findBone(root, side + '_' + name);
-  if (Object.values(bones).some((b) => !b)) return null;
-  const groupQuat = group.getWorldQuaternion(new THREE.Quaternion());
-  // axis given in bot space → the bone's parent space
-  const axisFor = (b, axis) => {
-    const parentQuat = b.parent.getWorldQuaternion(new THREE.Quaternion());
-    return axis.clone().applyQuaternion(groupQuat).applyQuaternion(parentQuat.invert()).normalize();
-  };
-  // choose rotation sign so `probe` moves along `direction` (bot space)
-  const signFor = (b, axisLocal, probe, direction) => {
-    const before = group.worldToLocal(worldOf(probe));
-    const rest = b.quaternion.clone();
-    b.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(axisLocal, 0.3));
-    group.updateMatrixWorld(true);
-    const after = group.worldToLocal(worldOf(probe));
-    b.quaternion.copy(rest);
-    group.updateMatrixWorld(true);
-    return after.sub(before).dot(direction) >= 0 ? 1 : -1;
-  };
-  const X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
-  const legs = {};
-  for (const side of ['L', 'R']) {
-    const hip = bones[side + 'Hip'], knee = bones[side + 'Knee'], foot = bones[side + 'Foot'];
-    const hipX = axisFor(hip, X), hipZ = axisFor(hip, Z), kneeX = axisFor(knee, X);
-    const outward = new THREE.Vector3(group.worldToLocal(worldOf(foot)).x >= 0 ? 1 : -1, 0, 0);
-    legs[side] = {
-      hip, knee,
-      hipRest: hip.quaternion.clone(),
-      kneeRest: knee.quaternion.clone(),
-      hipX, hipZ, kneeX,
-      forward: signFor(hip, hipX, knee, Z), // knee moves toward the front
-      out: signFor(hip, hipZ, foot, outward), // foot moves away from the body
-      bend: signFor(knee, kneeX, foot, Z.clone().negate()), // foot moves back
-    };
-  }
-  const feetY = Math.min(worldOf(bones.LFoot).y, worldOf(bones.RFoot).y);
-  return { legs, feetY, footL: bones.LFoot, footR: bones.RFoot, phase: 0, root, last: null };
-}
-
-const tmpQ = new THREE.Quaternion();
-/**
- * velocity: bot-space metres/second ({x: right, z: toward the player}); crouch 0..1.
- */
-export function animateAgent(group, dt, velocity = { x: 0, z: 0 }, crouch = 0) {
-  const rig = group.userData.rig;
-  if (!rig) return;
-  const speed = Math.hypot(velocity.x, velocity.z);
-  const moving = Math.min(1, speed / 1.5);
-  rig.phase += dt * (3 + speed * 2.4);
-  rig.moving = (rig.moving || 0) + (moving - (rig.moving || 0)) * Math.min(1, dt * 10);
-  rig.crouch = (rig.crouch || 0) + (crouch - (rig.crouch || 0)) * Math.min(1, dt * 12);
-  const lateral = speed > 0.01 ? Math.abs(velocity.x) / speed : 0;
-  const forwardShare = 1 - lateral;
-  for (const side of ['L', 'R']) {
-    const leg = rig.legs[side];
-    const wave = Math.sin(rig.phase + (side === 'L' ? 0 : Math.PI));
-    const step = Math.max(0, wave);
-    const stride = wave * 0.42 * forwardShare * rig.moving;
-    const spread = step * 0.28 * lateral * rig.moving;
-    const lift = step * 0.55 * rig.moving;
-    leg.hip.quaternion
-      .copy(leg.hipRest)
-      .premultiply(tmpQ.setFromAxisAngle(leg.hipX, leg.forward * (stride + rig.crouch * 1.15 + lift * 0.35)))
-      .premultiply(tmpQ.setFromAxisAngle(leg.hipZ, leg.out * spread));
-    leg.knee.quaternion
-      .copy(leg.kneeRest)
-      .premultiply(tmpQ.setFromAxisAngle(leg.kneeX, leg.bend * (lift + rig.crouch * 1.9)));
-  }
-  // keep the lowest foot on the floor
-  rig.root.position.y = 0;
-  group.updateMatrixWorld(true);
-  const feet = Math.min(worldOf(rig.footL).y, worldOf(rig.footR).y) - group.getWorldPosition(new THREE.Vector3()).y;
-  rig.root.position.y = rig.restFeet - feet;
-}
-
-/**
  * Third-person rifle for the agents: barrel along +Z, grip (socket `Root_`) at
  * the origin. Shared geometry/materials; no shots ever hit it.
  */
@@ -469,6 +377,11 @@ function holdRifle(body, group, weaponTemplate) {
   rh.attach(gun); // follows the hand from now on
 }
 
+/** Shows or hides the enemy highlight (a body on the floor is no longer a threat). */
+export function setAgentOutline(group, visible) {
+  for (const hull of group.userData.outlineHulls || []) hull.visible = visible;
+}
+
 /** A ready-to-place agent bot. */
 export function createAgentBot(template, { outline = true, weapon = null } = {}) {
   const group = new THREE.Group();
@@ -486,6 +399,7 @@ export function createAgentBot(template, { outline = true, weapon = null } = {})
     node.userData.keepColors = true;
     if (outline) outlines.push(node);
   });
+  group.userData.outlineHulls = [];
   for (const mesh of outlines)
     for (const pass of outlinePasses) {
       const hull = mesh.isSkinnedMesh
@@ -502,16 +416,14 @@ export function createAgentBot(template, { outline = true, weapon = null } = {})
       hull.userData.keepColors = true;
       hull.renderOrder = 10;
       mesh.parent.add(hull);
+      group.userData.outlineHulls.push(hull);
     }
   body.updateMatrixWorld(true);
   if (weapon) holdRifle(body, group, weapon);
   const rig = buildRig(body, group);
-  if (rig) {
-    rig.root = body;
-    group.updateMatrixWorld(true);
-    rig.restFeet = Math.min(worldOf(rig.footL).y, worldOf(rig.footR).y);
-    group.userData.rig = rig;
-  }
+  if (rig) group.userData.rig = rig;
+  // yaw first, then pitch: lets a dying bot fall backwards relative to where it faces
+  group.rotation.order = 'YXZ';
   buildHitboxes(body, group);
   return group;
 }

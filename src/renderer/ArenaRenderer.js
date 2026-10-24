@@ -14,13 +14,15 @@ import {
   setTargetOrbQuality,
   targetOrbRadius,
 } from './targetOrb.js';
+import { animateAgent, flinchAgent } from './agent-rig.js';
+import { approachAngle } from './agent-gait.js';
 import {
-  animateAgent,
   allyAgentId,
   createAgentBot,
   enemyAgentId,
   prepareAgentTemplate,
   prepareWeaponTemplate,
+  setAgentOutline,
   setOutlineColor,
   setOutlineResolution,
 } from './EnemyAgents.js';
@@ -32,6 +34,19 @@ const KNIFE_REST_OFFSET = new THREE.Vector3();
 const VIEWMODEL_VERTICAL = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(VIEWMODEL_FOV) / 2) / (16 / 9)));
 /** Modes whose targets are floating heads rather than full agents. */
 const headOnlyModes = [0, 2, 6];
+/** Agent bots ease toward a new heading at this rate (1/s) instead of snapping. */
+const BOT_TURN_RATE = 10;
+/** Smoothing of the measured bot velocity (1/s): network updates arrive in bursts. */
+const BOT_VELOCITY_SMOOTHING = 10;
+/** Faster than this (m/s) is a respawn, not a step. */
+const TELEPORT_SPEED = 25;
+/** Baja latencia: bots farther than this (m) animate at FAR_BOT_RATE (Hz) instead of every frame. */
+const FAR_BOT_DISTANCE = 18;
+const FAR_BOT_RATE = 20;
+/** Defence modes: a killed agent falls backwards (s, radians) and its body stays a moment (s). */
+const DEATH_FALL = 0.55;
+const DEATH_TILT = 1.45;
+const BODY_LINGER = 2.5;
 
 const material = (color, options = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.65, ...options });
@@ -253,6 +268,7 @@ export class ArenaRenderer {
   /** 'quality' or 'performance' (lower resolution, no shadows: less GPU time per frame = less input lag). */
   setQuality(mode) {
     const fast = mode === 'performance';
+    this.lowLatency = fast;
     this.renderer.setPixelRatio(fast ? 1 : Math.min(devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = !fast;
     setTargetOrbQuality(fast);
@@ -373,10 +389,11 @@ export class ArenaRenderer {
     }
     session.targets.forEach((t, i) => {
       const bot = this.bots.children[i];
-      const yaw = t.yaw ?? Math.atan2(session.position.x - t.x, session.position.z - t.z) * (bot.userData.agentBot ? 1 : 0);
-      this.animateBot(bot, t.x, t.z, yaw, t.crouch || 0);
+      const aim = t.yaw ?? Math.atan2(session.position.x - t.x, session.position.z - t.z) * (bot.userData.agentBot ? 1 : 0);
+      const dying = this.syncDeath(bot, t, Boolean(session.spike));
+      const yaw = this.displayYaw(bot, aim);
+      this.animateBot(bot, t.x, t.z, yaw, dying ? 1 : t.crouch || 0);
       bot.position.set(t.x, t.y - 1.65, t.z);
-      bot.visible = !t.dead;
       bot.rotation.y = yaw;
       if (t.tracked !== undefined)
         bot.traverse((n) => {
@@ -388,9 +405,10 @@ export class ArenaRenderer {
         if (mesh.isMesh) mesh.userData.targetId = t.id;
       });
     });
-    const allies=session.spike?[...(session.companion?[session.companion]:[]),...Object.values(session.remotePlayers||{})].filter(p=>p.hp>0):[];
+    // the bot partner carries a body heading; friends send their camera yaw, which looks the opposite way
+    const allies=session.spike?[...(session.companion?[{...session.companion,heading:session.companion.yaw||0}]:[]),...Object.values(session.remotePlayers||{}).map(p=>({...p,heading:(p.yaw||0)+Math.PI}))].filter(p=>p.hp>0):[];
     while(this.allyBots.children.length<allies.length)this.allyBots.add(this.makeAlly());
-    this.allyBots.children.forEach((bot,i)=>{bot.visible=i<allies.length;if(bot.visible){const p=allies[i];this.animateBot(bot,p.x,p.z,p.yaw||0,0);bot.position.set(p.x,(p.y||1.65)-1.65,p.z);bot.rotation.y=p.yaw||0;}});
+    this.allyBots.children.forEach((bot,i)=>{bot.visible=i<allies.length;if(bot.visible){const p=allies[i];const yaw=this.displayYaw(bot,p.heading);this.animateBot(bot,p.x,p.z,yaw,0);bot.position.set(p.x,(p.y||1.65)-1.65,p.z);bot.rotation.y=yaw;}});
     this.syncDrill(session);
     this.courseGeometry.children.forEach(part=>{if(part.userData.coursePad===undefined)return;const active=part.userData.coursePad===session.courseStep+1;part.material.color.copy(this.paletteAccent || new THREE.Color(0xff4b92));part.material.emissiveIntensity=active?.8:.12;part.visible=part.geometry.type!=='TorusGeometry' || active;});
     this.scene.updateMatrixWorld(true);
@@ -434,26 +452,63 @@ export class ArenaRenderer {
       this.nearsightTint = near > 0;
     }
   }
-  /** Walk / crouch animation from the bot's movement since the previous frame. */
+  /** Walk / crouch animation from the bot's movement since it was last animated. */
   animateBot(bot, x, z, yaw, crouch) {
     // hit tests also call sync(); only the render pass advances the animation
-    if (!bot.userData.rig || !this.inRender) return;
-    const dt = this.frameDt || 1 / 60;
-    const prev = bot.userData.prev || { x, z };
+    const data = bot.userData;
+    if (!data.rig || !this.inRender) return;
+    data.pendingDt = (data.pendingDt || 0) + (this.frameDt || 1 / 60);
+    const far = Math.hypot(x - this.camera.position.x, z - this.camera.position.z) > FAR_BOT_DISTANCE;
+    if (this.lowLatency && far && data.pendingDt < 1 / FAR_BOT_RATE) return;
+    const dt = data.pendingDt;
+    data.pendingDt = 0;
+    const prev = data.prev || { x, z };
+    data.prev = { x, z };
     const vx = (x - prev.x) / dt,
       vz = (z - prev.z) / dt;
-    bot.userData.prev = { x, z };
     // world velocity → bot space (x right, z forward)
     const c = Math.cos(yaw),
       s = Math.sin(yaw);
-    const velocity = Math.hypot(vx, vz) > 25 ? { x: 0, z: 0 } : { x: vx * c - vz * s, z: vx * s + vz * c };
-    animateAgent(bot, dt, velocity, crouch);
+    const measured = Math.hypot(vx, vz) > TELEPORT_SPEED ? { x: 0, z: 0 } : { x: vx * c - vz * s, z: vx * s + vz * c };
+    const last = data.velocity || measured;
+    const k = 1 - Math.exp(-BOT_VELOCITY_SMOOTHING * dt);
+    data.velocity = { x: last.x + (measured.x - last.x) * k, z: last.z + (measured.z - last.z) * k };
+    animateAgent(bot, dt, data.velocity, crouch);
+  }
+  /** Agent bots ease toward a new heading; hit tests use the heading the player sees. */
+  displayYaw(bot, target) {
+    const data = bot.userData;
+    if (!data.agentBot || data.yaw === undefined) return (data.yaw = target);
+    if (this.inRender) data.yaw = approachAngle(data.yaw, target, BOT_TURN_RATE, this.frameDt || 1 / 60);
+    return data.yaw;
+  }
+  /** Defence modes: a killed agent falls backwards and lies there briefly. Returns true while dying. */
+  syncDeath(bot, target, defence) {
+    const data = bot.userData;
+    if (!target.dead || !defence || !data.rig) {
+      if (!target.dead && data.dying) {
+        // the slot holds a new attacker: start it fresh, standing
+        Object.assign(data, { deadFor: undefined, yaw: undefined, prev: undefined, velocity: undefined });
+        bot.rotation.x = 0;
+        setAgentOutline(bot, true);
+      }
+      data.dying = false;
+      bot.visible = !target.dead;
+      return false;
+    }
+    if (data.deadFor === undefined) setAgentOutline(bot, false);
+    if (this.inRender) data.deadFor = (data.deadFor || 0) + (this.frameDt || 1 / 60);
+    const fall = Math.min(1, (data.deadFor || 0) / DEATH_FALL);
+    bot.rotation.x = -DEATH_TILT * fall * fall; // speeds up like a real fall
+    data.dying = true;
+    bot.visible = (data.deadFor || 0) < DEATH_FALL + BODY_LINGER;
+    return true;
   }
   cast(offset = { x: 0, y: 0 }) {
     if (offset.degrees) offset = this.degreesToNdc(offset);
     this.raycaster.setFromCamera(this.center.set(offset.x, offset.y), this.camera);
     const hit = this.raycaster.intersectObjects(
-      this.bots.children.filter((b) => b.visible),
+      this.bots.children.filter((b) => b.visible && !b.userData.dying),
       true,
     )[0];
     const covers=this.lastSession?.spike?this.havenGroup.children.filter(n=>n.visible):this.peekGeometry.children;
@@ -554,6 +609,10 @@ export class ArenaRenderer {
     for (const event of session.events) {
       if (this.effectSeen.has(event)) continue;
       this.effectSeen.add(event);
+      if (event.type === 'impact') {
+        const struck = this.bots.children.find((bot) => bot.userData.targetId === event.id);
+        if (struck) flinchAgent(struck, Math.random() < 0.5 ? -1 : 1);
+      }
       if(['enemy-shot','ally-shot'].includes(event.type)){
         const geometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(event.x,event.y,event.z),new THREE.Vector3(event.to.x,event.to.y,event.to.z)]);
         const line=new THREE.Line(geometry,new THREE.LineBasicMaterial({color:event.type==='enemy-shot'?0xffab72:0x74dbc7,transparent:true,opacity:.6}));

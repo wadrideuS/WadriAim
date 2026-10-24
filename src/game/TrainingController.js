@@ -598,7 +598,7 @@ export class TrainingController {
   leaveSpikeRoom(){
     clearInterval(this.networkTimer);this.networkTimer=null;
     this.room?.close();this.room=null;this.peerReady=false;
-    if(this.session)this.session.networkRole=null;
+    if(this.session){this.session.networkRole=null;this.session.defenderSlot=0;}
   }
   async openSpikeRoom(code){
     this.leaveSpikeRoom();this.spikeLobby.message('Conectando a la sala…');
@@ -606,6 +606,7 @@ export class TrainingController {
     this.room=room;
     try{await room.open(code);if(!$('game').open){this.leaveSpikeRoom();return;}
       this.session.networkRole=room.host?'host':'guest';this.peerReady=false;
+      this.session.defenderSlot=Math.max(0,room.info.members.findIndex(m=>m.id===room.userId));
       this.session.spikeOptions={...this.spikeLobby.options(),partner:'friend'};resetSpike(this.session,this.session.spikeOptions);
       this.session.remotePlayers={};
       this.networkTimer=setInterval(()=>this.networkFrame(),80);this.draw();

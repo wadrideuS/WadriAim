@@ -1,22 +1,32 @@
 import {havenNavigation,moveHaven} from './haven-map.js';
-import {survivalNavigation} from './survival-map.js';
+import {survivalNavigation,SURVIVAL_ENTRIES} from './survival-map.js';
+import {cameraYawFor,defenderLine,facingHeading,headingOfView,headingTo,waveSpawnPoints} from './defense-spawns.js';
+const WAVE_SIZE=5;
+/** Player plus a bot partner, or up to four friends in a room. */
+const DEFENDER_COUNT=4;
 export const spikeDifficulties={basic:{name:'Básico',speed:1.8,reaction:.85,interval:1.05,accuracy:.4,head:.04},hard:{name:'Difícil',speed:2.4,reaction:.4,interval:.65,accuracy:.7,head:.14},vct:{name:'VCT AIMER',speed:3.1,reaction:.12,interval:.22,accuracy:.99,head:.78}};
 export function resetSpike(s,{difficulty='basic',partner='solo',spawn=null}={}){
- s.navigation=s.mode===12?survivalNavigation:havenNavigation;
+ const survival=s.mode===12;
+ s.navigation=survival?survivalNavigation:havenNavigation;
  // a spawn the player picked from the pause menu ("Aparecer aquí"), if it is still walkable
  const custom=spawn&&Number.isFinite(spawn.x)&&Number.isFinite(spawn.z)&&s.navigation.canWalk(spawn.x,spawn.z);
  const havenSpawn=custom?{x:spawn.x,z:spawn.z}:s.navigation.spawn,havenSpike=s.navigation.objective;
- s.spike={...havenSpike,defuse:0,outcome:null,difficulty,partner,survival:s.mode===12,phase:'wave',wave:1,restLeft:0};s.health=150;s.hurtUntil=0;
- s.position={...havenSpawn,y:1.65};s.yaw=custom&&Number.isFinite(spawn.yaw)?spawn.yaw:Math.atan2(-(havenSpike.x-havenSpawn.x),-(havenSpike.z-havenSpawn.z));
- const ally=s.navigation.nearest(havenSpawn.x+1.4,havenSpawn.z);
- s.companion=partner==='bot'?{...ally,y:1.65,hp:150,nextShot:1.5}:null;
+ s.spike={...havenSpike,defuse:0,outcome:null,difficulty,partner,survival,phase:'wave',wave:1,restLeft:0};s.health=150;s.hurtUntil=0;
+ // survival: look at the doorways the attackers walk in through; Haven: look at the spike
+ const front=survival?facingHeading(havenSpawn,SURVIVAL_ENTRIES.flatMap(entry=>entry.slots)):headingTo(havenSpawn,havenSpike);
+ s.yaw=custom&&Number.isFinite(spawn.yaw)?spawn.yaw:cameraYawFor(front);
+ const line=defenderLine(havenSpawn,s.yaw,DEFENDER_COUNT,s.navigation.nearest);
+ const slot=partner==='friend'?s.defenderSlot||0:0;
+ s.position={...(slot>0&&line[slot]?line[slot]:havenSpawn),y:1.65};
+ s.companion=partner==='bot'?{...line[1],y:1.65,hp:150,nextShot:1.5,yaw:headingOfView(s.yaw)}:null;
  s.remotePlayer=null;s.remoteStats={};s.remotePlayers={};
  spawnDefenseWave(s);
 
 }
 export function spawnDefenseWave(s){
  const goal=s.spike.survival?s.position:s.spike;
- s.targets=s.navigation.randomSpawns(s.random).map((p,id)=>({id,...p,y:1.65,hp:150+(s.spike.survival?(s.spike.wave-1)*12:0),dead:false,born:s.elapsed,generation:s.spike.wave,path:s.navigation.path(p,goal),pathAt:0,nextPathAt:s.elapsed+1.5,nextShot:s.elapsed+1.8+id*.3,reactionAt:0,lastVictim:null,weapon:'vandal'}));
+ const points=s.spike.survival?waveSpawnPoints(SURVIVAL_ENTRIES,s.spike.wave,WAVE_SIZE):s.navigation.randomSpawns(s.random);
+ s.targets=points.map((p,id)=>({id,x:p.x,z:p.z,yaw:headingTo(p,goal),y:1.65,hp:150+(s.spike.survival?(s.spike.wave-1)*12:0),dead:false,born:s.elapsed,generation:s.spike.wave,path:s.navigation.path(p,goal),pathAt:0,nextPathAt:s.elapsed+1.5,nextShot:s.elapsed+1.8+id*.3,reactionAt:0,lastVictim:null,weapon:'vandal'}));
 }
 export function damageSpikeBot(s,target,part,damage,owner='self'){
  target.hp=Math.max(0,target.hp-damage);
