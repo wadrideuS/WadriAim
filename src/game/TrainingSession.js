@@ -6,6 +6,7 @@ import {resetCourse,tickCourse,requestCourseJump} from './movement-courses.js';
 import { arsenal, weaponDamage, AGENT_HP, headOnlyModes } from '../data/weapons.js';
 import { exercises } from '../data/exercises.js';
 import { trainingRules } from '../data/training-rules.js';
+import { MAX_LOGGED_SHOTS, medianKillMs, shotOffset } from './round-log.js';
 
 /** Deterministic training rules. Rendering and browser APIs stay outside this class. */
 export class TrainingSession {
@@ -55,6 +56,8 @@ export class TrainingSession {
     this.wave = 1;
     this.combo = 0;
     this.events = [];
+    this.shotLog = [];
+    this.lastKillAt = -Infinity;
     this.feedback = null;
     this.waveReset = 0;
     this.spawnSerial = 0;
@@ -223,18 +226,27 @@ export class TrainingSession {
       angle = this.random() * Math.PI * 2;
     // the camera already shows `viewKick` of the pattern; the bullet carries the rest
     const kick = w.viewKick || 0;
-    const hit = this.hitTest({
+    const aim = {
       x: sprayX - this.punch.x + Math.cos(angle) * radius,
       y: sprayY - this.punch.y + Math.sin(angle) * radius,
       degrees: true,
-    });
+    };
+    const hit = this.hitTest(aim);
+    const struck = hit ? this.targets.find((t) => t.id === hit.id && !t.dead) : null;
+    const offset = shotOffset(
+      { position: this.position, yaw: this.viewYaw, pitch: this.viewPitch },
+      struck,
+      this.targets,
+      aim,
+    );
+    const hitsBefore = this.hits;
     this.punch.x = sprayX * kick;
     this.punch.y = sprayY * kick;
     this.sprayIndex++;
     this.lastShotAt = this.elapsed;
     this.burst = Math.min(9, this.burst + 1);
     if (hit && !([11,12].includes(this.mode) && this.networkRole==='guest')) {
-      const target = this.targets.find((t) => t.id === hit.id && !t.dead);
+      const target = struck;
       if (target) {
         this.hitmarker = 0.14;
         const distance = Math.hypot(target.x - this.position.x, target.z - this.position.z);
@@ -253,8 +265,25 @@ export class TrainingSession {
         }
       }
     } else this.combo = 0;
+    this.logShot(struck, hit?.part, offset, this.hits > hitsBefore);
     if (this.ammo === 0) this.reload();
     return true;
+  }
+  /** One small entry per shot for the round summary; never read during play. */
+  logShot(target, part, offset, killed) {
+    if (this.shotLog.length >= MAX_LOGGED_SHOTS) return;
+    const shot = {
+      t: Math.round(this.elapsed * 100) / 100,
+      result: killed ? 'kill' : target ? 'impact' : 'miss',
+      head: Boolean(target) && part === 'head',
+      ...offset,
+    };
+    if (killed) {
+      const since = Math.max(target.born ?? this.elapsed, this.lastKillAt);
+      shot.ms = Math.round((this.elapsed - since) * 1000);
+      this.lastKillAt = this.elapsed;
+    }
+    this.shotLog.push(shot);
   }
   tick(dt, { keys = new Set(), fire = false, ads = false } = {}) {
     if (this.status !== 'running') return;
@@ -387,6 +416,7 @@ export class TrainingSession {
       ammoMode: this.infiniteAmmo ? 'infinite' : 'reload',
       activeDuration: this.totalElapsed,
       shots: this.shots,
+      targetMs: medianKillMs(this.shotLog),
       expired: this.expired,
       accuracy:
         this.mode === 2

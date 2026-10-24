@@ -3,7 +3,7 @@ import {installSpikeLobby} from '../features/spike-lobby.js';
 import {SpikeRoom} from './SpikeRoom.js';
 import {resetSpike,damageSpikeBot} from './SpikeDefense.js';
 import {canWalkHaven,havenSpawn} from './haven-map.js';
-import {showSessionSummary} from '../features/session-summary.js';
+import { showSessionSummary } from '../features/session-summary/index.js';
 import { installKeystrokes } from '../features/keystrokes.js';
 import { getModeRecords } from '../account/service.js';
 import { setLiveActivity } from '../features/live-activity.js';
@@ -24,7 +24,7 @@ const $ = (id) => document.getElementById(id);
 
 /** Connects DOM, input, simulation and GPU renderer; owns their lifecycle. */
 export class TrainingController {
-  constructor({ getProfile, onComplete, music, updateProfile }) {
+  constructor({ getProfile, onComplete, music, updateProfile, onShowTraining, onShowProgress }) {
     this.music = music;
     this.updateProfile = updateProfile;
     this.modeBrief = document.createElement('section');
@@ -53,6 +53,8 @@ export class TrainingController {
     this.audio.setMuted(read('wa-muted', false));
     this.getProfile = getProfile;
     this.onComplete = onComplete;
+    this.onShowTraining = onShowTraining;
+    this.onShowProgress = onShowProgress;
     this.finishChoices = read('wa-finishes', {});
     this.weaponChoices = read('wa-weapons', {});
     this.session = new TrainingSession();
@@ -491,7 +493,13 @@ export class TrainingController {
     this.onComplete(result);
     const mode=this.session.mode;
     this.close({summary:false});
-    this.clearSummary=showSessionSummary(result,{onReplay:()=>this.open(mode)});
+    this.clearSummary = showSessionSummary(result, {
+      shots: this.session.shotLog,
+      history: read('wa-history', []),
+      onReplay: () => this.open(mode),
+      onHome: this.onShowTraining,
+      onProgress: this.onShowProgress,
+    });
   }
   loop(now) {
     if (this.session.status !== 'running') return;
